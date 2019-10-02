@@ -1,0 +1,7 @@
+<resources>
+    <string name="libName">fileChooser</string>
+    <string name="working">working on that... please wait</string>
+    <string name="ftpconnect">connecting... please wait</string>
+    <string name="reading">reading files... please wait</string>
+    <string name="fileAction">Select file Action</string>
+</resources>

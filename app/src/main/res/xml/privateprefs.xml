@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * @author Alex Tauber
+ *
+ * This file is part of the open source Android app MTKutility2. You can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, version 3 of the License. This extends to files included that were authored by
+ * others and modified to make them suitable for this app. All files included were subject to
+ * open source licensing.
+ *
+ * MTKutility2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details. You can review a copy of the
+ * GNU General Public License at http://www.gnu.org/licenses.
+-->
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory
+        android:title="@string/fonts"
+        android:key="fonts">
+
+        <EditTextPreference
+            android:key="homeFont"
+            android:summary=""
+            android:title="@string/homeFont" />
+
+        <EditTextPreference
+            android:key="setBtns"
+            android:summary=""
+            android:title="@string/setBtns" />
+
+        <EditTextPreference
+            android:key="setHtml"
+            android:summary=""
+            android:title="@string/setHtml" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Misc settings" android:key="Misc settings">
+
+        <EditTextPreference
+            android:key="AGPSsize"
+            android:summary=""
+            android:title="@string/AGPSsize" />
+
+        <ListPreference
+            android:entries="@array/debugValue"
+            android:entryValues="@array/debugReturn"
+            android:key="debugPref"
+            android:summary="@string/debugPref"
+            android:title="@string/debugPref" />
+
+        <EditTextPreference
+            android:key="cmdRetries"
+            android:summary=""
+            android:title="@string/cmdRetries" />
+
+        <EditTextPreference
+            android:key="cmdDelay"
+            android:summary=""
+            android:title="@string/cmdDelay" />
+
+        <EditTextPreference
+            android:key="epoDelay"
+            android:summary=""
+            android:title="@string/epoDelay" />
+
+        <EditTextPreference
+            android:key="downDelay"
+            android:summary=""
+            android:title="@string/downDelay" />
+
+        <CheckBoxPreference
+            android:key="stopNMEA"
+            android:summary=""
+            android:title="@string/disNmeaDown"/>
+
+        <CheckBoxPreference
+            android:key="stopLOG"
+            android:summary=""
+            android:title="@string/disLogDown"/>
+			
+        <ListPreference
+            android:key="downBlockSize"
+            android:title="Download Block Size"
+            android:entries="@array/listBlockSizeShow"
+            android:entryValues="@array/listBlockSizeReturn"/>
+
+    </PreferenceCategory>
+</PreferenceScreen>

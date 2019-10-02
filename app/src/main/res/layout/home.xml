@@ -1,0 +1,342 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ * @author Alex Tauber
+ *
+ * This file is part of the open source Android app MTKutility2. You can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, version 3 of the License. This extends to files included that were authored by
+ * others and modified to make them suitable for this app. All files included were subject to
+ * open source licensing.
+ *
+ * MTKutility2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details. You can review a copy of the
+ * GNU General Public License at http://www.gnu.org/licenses.
+
+  HomeFragment provides connectGPS/disconnectGPS to GPS logger, NMEA sentence display control and
+  displays the NEMA sentences while connected.
+-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:layout_marginTop="?attr/actionBarSize"
+    android:focusable="true"
+    android:keepScreenOn="true"
+    android:orientation="vertical"
+    tools:context=".HomeFragment">
+
+    <TextView
+        android:id="@+id/GPstats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_border"
+        android:clickable="false"
+        android:inputType="none"
+        android:lines="2"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:textStyle="normal"
+        android:typeface="normal" />
+
+    <LinearLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_border"
+        android:orientation="vertical">
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:columnCount="8"
+            android:rowCount="1">
+
+            <TextView
+                android:id="@+id/txNMEAinp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_row="0"
+                android:layout_columnSpan="5"
+                android:layout_gravity="center"
+                android:layout_marginLeft="5dp"
+                android:text="@string/txNMEAinp"
+                android:textSize="5pt" />
+
+            <Button
+                android:id="@+id/btnSvNMEA"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="5"
+                android:layout_gravity="right"
+                android:minHeight="12dp"
+                android:text="@string/btnNMEASave" />
+
+            <Button
+                android:id="@+id/btnNMEAdflt"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="6"
+                android:layout_alignBaseline="@+id/btnSvNMEA"
+                android:layout_toRightOf="@+id/btnSvNMEA"
+                android:minHeight="12dp"
+                android:text="@string/btnNMEAdflt" />
+
+            <Button
+                android:id="@+id/btnPause"
+                style="?android:attr/buttonStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="7"
+                android:layout_alignBaseline="@+id/btnSvNMEA"
+                android:layout_toRightOf="@+id/btnSvNMEA"
+                android:minHeight="12dp"
+                android:text="@string/btnNMEApause" />
+        </GridLayout>
+
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:columnCount="7"
+                android:paddingLeft="15sp"
+                android:paddingRight="15sp"
+                android:rowCount="2"
+                android:useDefaultMargins="true">
+
+                <TextView
+                    android:id="@+id/txtGGA"
+                    android:layout_row="0"
+                    android:layout_column="0"
+                    android:text="GGA" />
+
+                <Spinner
+                    android:id="@+id/GGA"
+                    android:layout_row="1"
+                    android:layout_column="0" />
+
+                <TextView
+                    android:id="@+id/txtGLL"
+                    android:layout_row="0"
+                    android:layout_column="1"
+                    android:text="GLL" />
+
+                <Spinner
+                    android:id="@+id/GLL"
+                    android:layout_row="1"
+                    android:layout_column="1" />
+
+                <TextView
+                    android:id="@+id/txtGSA"
+                    android:layout_row="0"
+                    android:layout_column="2"
+                    android:text="GSA" />
+
+                <Spinner
+                    android:id="@+id/GSA"
+                    android:layout_row="1"
+                    android:layout_column="2" />
+
+                <TextView
+                    android:id="@+id/txtGSV"
+                    android:layout_row="0"
+                    android:layout_column="3"
+                    android:text="GSV" />
+
+                <Spinner
+                    android:id="@+id/GSV"
+                    android:layout_row="1"
+                    android:layout_column="3" />
+
+                <TextView
+                    android:id="@+id/txtRMC"
+                    android:layout_row="0"
+                    android:layout_column="4"
+                    android:text="RMC" />
+
+                <Spinner
+                    android:id="@+id/RMC"
+                    android:layout_row="1"
+                    android:layout_column="4" />
+
+                <TextView
+                    android:id="@+id/txtVTG"
+                    android:layout_row="0"
+                    android:layout_column="5"
+                    android:text="VTG" />
+
+                <Spinner
+                    android:id="@+id/VTG"
+                    android:layout_row="1"
+                    android:layout_column="5" />
+
+                <TextView
+                    android:id="@+id/txtZDA"
+                    android:layout_row="0"
+                    android:layout_column="6"
+                    android:text="ZDA" />
+
+                <Spinner
+                    android:id="@+id/ZDA"
+                    android:layout_row="1"
+                    android:layout_column="6" />
+            </GridLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btnGetGPS"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentTop="true"
+            android:minHeight="12dp"
+            android:text="@string/setGPS" />
+
+        <TextView
+            android:id="@+id/txtGPSname"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignTop="@+id/btnGetGPS"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@id/btnGetGPS"
+            android:enabled="true"
+            android:text="@string/noGPSsel"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/design_default_color_primary_dark" />
+
+        <TextView
+            android:id="@+id/txtChkBox"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/btnGetGPS"
+            android:layout_marginLeft="10dp"
+            android:layout_toRightOf="@id/txtGPSname"
+            android:enabled="true"
+            android:minLines="2"
+            android:text="@string/allowInsecure"
+            android:textAppearance="?android:attr/textAppearanceSmall" />
+
+        <CheckBox
+            android:id="@+id/cbxInsecure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/txtChkBox"
+            android:layout_toRightOf="@id/txtChkBox" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btnConnect"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="12dp"
+            android:text="@string/btn_connect" />
+
+
+        <TextView
+            android:id="@+id/txtRS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/btnConnect"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/btnConnect"
+            android:enabled="false"
+            android:minWidth="20sp"
+            android:paddingLeft="0sp"
+            android:paddingRight="0sp"
+            android:text="@string/txtRS"
+            android:textColor="@color/colorblack"
+            android:textSize="10sp" />
+
+        <Button
+            android:id="@+id/btnHot"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/btnConnect"
+            android:layout_toRightOf="@+id/txtRS"
+            android:minHeight="12dp"
+            android:text="@string/btnHot" />
+
+        <Button
+            android:id="@+id/btnWarm"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/btnConnect"
+            android:layout_toRightOf="@+id/btnHot"
+            android:minHeight="12dp"
+            android:text="@string/btnWarm" />
+
+        <Button
+            android:id="@+id/btnCold"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/btnConnect"
+            android:layout_toRightOf="@+id/btnWarm"
+            android:minHeight="12dp"
+            android:text="@string/btnCold" />
+
+        <Button
+            android:id="@+id/btnFactory"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/btnConnect"
+            android:layout_toRightOf="@+id/btnCold"
+            android:minHeight="12dp"
+            android:text="@string/btnFactory" />
+
+    </RelativeLayout>
+
+    <ScrollView
+        android:id="@+id/mSvMsg"
+        android:layout_width="fill_parent"
+        android:layout_height="70dp"
+        android:background="@drawable/rounded_border">
+
+        <TextView
+            android:id="@+id/msgFrame"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text=""
+            android:textStyle="bold"
+            android:typeface="normal" />
+    </ScrollView>
+
+    <ScrollView
+        android:id="@+id/mSvText"
+        android:layout_width="fill_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/rounded_border">
+
+        <TextView
+            android:id="@+id/mTvText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:text="" />
+    </ScrollView>
+</LinearLayout>

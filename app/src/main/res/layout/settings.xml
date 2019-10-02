@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+ * @author Alex Tauber
+ *
+ * This file is part of the open source Android app MTKutility2. You can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, version 3 of the License. This extends to files included that were authored by
+ * others and modified to make them suitable for this app. All files included were subject to
+ * open source licensing.
+ *
+ * MTKutility2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details. You can review a copy of the
+ * GNU General Public License at http://www.gnu.org/licenses.
+
+
+-->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="?attr/actionBarSize"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="90dp"
+        android:layout_marginTop="10dp"
+        android:adjustViewBounds="true"
+        android:src="@mipmap/ic_settings" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/wvbtnRec"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:minHeight="14dp"
+            android:text="Recording"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/wvbtnMtd"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/wvbtnRec"
+            android:layout_toRightOf="@+id/wvbtnRec"
+            android:minHeight="14dp"
+            android:text="Method"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/wvbtnNav"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/wvbtnMtd"
+            android:layout_toRightOf="@+id/wvbtnMtd"
+            android:minHeight="14dp"
+            android:text="Navigation"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/wvbtnSat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/wvbtnNav"
+            android:layout_toRightOf="@+id/wvbtnNav"
+            android:minHeight="14dp"
+            android:text="Sat info"
+            android:textSize="12sp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/wvbtnUTC"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:minHeight="14dp"
+            android:text="UTC"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/wvbtnDif"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/wvbtnUTC"
+            android:layout_toRightOf="@+id/wvbtnUTC"
+            android:minHeight="14dp"
+            android:text="Differential"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/wvbtnDOP"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/wvbtnDif"
+            android:layout_toRightOf="@+id/wvbtnDif"
+            android:minHeight="14dp"
+            android:text="DOP"
+            android:textSize="12sp" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/wvbtnFreq"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:minHeight="14dp"
+            android:text="Frequency"
+            android:textSize="12sp" />
+
+
+        <Button
+            android:id="@+id/wvbtnDflt"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/wvbtnFreq"
+            android:layout_toRightOf="@+id/wvbtnFreq"
+            android:minHeight="14dp"
+            android:text="set to default"
+            android:textSize="12sp" />
+
+        <Button
+            android:id="@+id/wvbtnSave"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/wvbtnDflt"
+            android:layout_toRightOf="@+id/wvbtnDflt"
+            android:minHeight="14dp"
+            android:text="save updates"
+            android:textSize="12sp" />
+    </RelativeLayout>
+
+    <WebView
+        android:id="@+id/webView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

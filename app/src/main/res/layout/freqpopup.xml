@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:columnCount="4"
+    android:orientation="horizontal"
+    android:rowCount="5" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_column="0"
+        android:layout_columnSpan="4"
+        android:layout_marginLeft="10dp"
+        android:layout_marginTop="3dp"
+        android:layout_row="0"
+        android:maxLines="1"
+        android:text="@string/txvAul" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_column="0"
+        android:layout_gravity="right|center_vertical"
+        android:layout_marginLeft="5dp"
+        android:layout_row="1"
+        android:gravity="right"
+        android:maxLines="1"
+        android:text="@string/tvByTime" />
+
+    <EditText
+        android:id="@+id/txtByT"
+        android:layout_column="1"
+        android:layout_gravity="right"
+        android:layout_row="1"
+        android:gravity="bottom|right"
+        android:inputType="numberDecimal"
+        android:maxLength="4"
+        android:maxLines="1" >
+
+        <requestFocus />
+    </EditText>
+
+    <TextView
+        android:layout_column="2"
+        android:layout_gravity="left|center_vertical"
+        android:layout_marginLeft="3dp"
+        android:layout_row="1"
+        android:maxLines="1"
+        android:text="@string/txvByT" />
+
+    <EditText
+        android:id="@+id/txtByD"
+        android:layout_column="1"
+        android:layout_gravity="right"
+        android:layout_row="2"
+        android:gravity="bottom|right"
+        android:inputType="number"
+        android:maxLength="4"
+        android:maxLines="1" >
+    </EditText>
+
+    <TextView
+        android:layout_column="2"
+        android:layout_gravity="left|center_vertical"
+        android:layout_marginLeft="3dp"
+        android:layout_row="2"
+        android:maxLines="1"
+        android:text="@string/txvByD" />
+
+    <EditText
+        android:id="@+id/txtByS"
+        android:layout_column="1"
+        android:layout_gravity="right"
+        android:layout_row="3"
+        android:gravity="bottom|right"
+        android:inputType="number"
+        android:maxLength="3"
+        android:maxLines="1" >
+    </EditText>
+
+    <TextView
+        android:layout_column="2"
+        android:layout_gravity="left|center_vertical"
+        android:layout_marginLeft="3dp"
+        android:layout_row="3"
+        android:maxLines="1"
+        android:text="@string/txvByS" />
+
+    <TextView
+        android:layout_column="0"
+        android:layout_gravity="right|center_vertical"
+        android:layout_marginLeft="10dp"
+        android:layout_row="2"
+        android:gravity="right"
+        android:maxLines="1"
+        android:text="@string/tvByDist" />
+
+    <TextView
+        android:layout_column="0"
+        android:layout_gravity="right|center_vertical"
+        android:layout_marginLeft="10dp"
+        android:layout_row="3"
+        android:gravity="right"
+        android:maxLines="1"
+        android:text="@string/tvSpdOvr" />
+
+</GridLayout>

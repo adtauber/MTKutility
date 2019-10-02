@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="MissingTranslation" >
+
+    <string name="app_name">MTKutility</string>
+
+    <string name="cancel">Cancel</string>
+    <string name="exit">Exit</string>
+    <string name="back1">press back again to exit mtkutility</string>
+    <string name="back2">closing MTKutility</string>
+    <string name="pleaseNav">please navigate to Home screen first</string>
+    <string name="homeNav">press back again to go to home screen</string>
+
+    <string name="nowrite">MTKutility needs write internal storage permission</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_settings">Settings</string>
+    <string name="noback">use the menu to navigate</string>
+    <string name="selOne">Select One Name</string>
+    <string name="selected">selected</string>
+    <string name="created">created: </string>
+    <string name="writing">writing: </string>
+    <string name="saved">settings have been saved</string>
+    <string name="nosave">no changes to save</string>
+    <string name="noSave">save failed</string>
+    <string name="logFatal">create file %1$s failed</string>
+    <string name="goMain">return to Main screen and connect logger</string>
+    <string name="noLogDL">MTK logger has 0 log records - nothing to download</string>
+    <string name="noLogClr">MTK logger has 0 log records - nothing to erase</string>
+    <string name="GPSrecs">GPS has %1$d records</string>
+    <string name="makeFolderErr">ERROR - create folder %1$s failed</string>
+    <string name="dlDone"> download is done</string>
+    <string name="dlAbort">aborting download - %1$s failed</string>
+    <string name="dlcAbort">aborting download - data conversion error</string>
+    <string name="dlbAbort">aborting download - open %1$s failed</string>
+
+    <string name="hs00">Things You Need to Know</string>
+    <string name="hs01">app preferences</string>
+    <string name="hs02">Home screen</string>
+    <string name="hs03">Download Log screen</string>
+    <string name="hs04">Erase GPS Records</string>
+    <string name="hs05">Make GPX file screen</string>
+    <string name="hs06">Get EPO file screen</string>
+    <string name="hs07">Udate AGPS screen</string>
+    <string name="hs08">Update Settings screen</string>
+    <string name="hs09">Send App Log screen</string>
+    <string name="hs10">Exit</string>
+
+    <string name="noCompat">not compatible</string>
+    <string name="noBluetooth">your phone does not support Bluetooth</string>
+    <string name="noLog">your GPS does not seem to log trackpoints - log download is not enabled</string>
+    <string name="noAGPS">your GPS does not seem to Store EPO data - AGPS update is not enabled</string>
+    <string name="wrongMode">recording mode must be \"stop when full\" - log download is not enabled</string>
+    <string name="noPaired">no paired devices found</string>
+    <string name="noGPSselected">GPS logger has not been selected</string>
+    <string name="GPSconnectFail">connect to GPS logger failed</string>
+    <string name="noConnect">please connect to your GPS logger</string>
+    <string name="connecting">Connecting to your GPS logger</string>
+    <string name="disconnecting">disConnecting from your GPS logger</string>
+    <string name="connected">disConnect</string>
+    <string name="disconnected">Connect</string>
+    <string name="GPSconnected">is connected</string>
+    <string name="GPSdisconnected">%s is disconnected</string>
+    <string name="working">working on that... please wait</string>
+    <string name="getSetngs">reading settings... please wait</string>
+    <string name="intializing">starting... please wait</string>
+    <string name="restored">default settings restored</string>
+    <string name="logBgn">Log downlaod started %1$s</string>
+    <string name="logEnd">Log downlaod finished %1$s</string>
+    <string name="clrBgn">Log erase started %1$s</string>
+    <string name="clrEnd">Log erase finished %1$s</string>
+    <string name="erased">GPS log has been formatted</string>
+
+    <string name="fatalErr">fatal error: %s</string>
+    <string name="crashLog">MTKutility failed - please send the trace file. Thank You.</string>
+    <string name="errortext">The attached log file contains information about your phone, a log
+        of the code executed before MTKutility failed, and a system trace report for the failure.
+        \nThanks for sending this.\nAl Tauber</string>
+    <string name="emailtext">The attached log file contains information about your phone, GPS logger,
+        and a log of the code executed. Please add any comments you would like to direct to me and
+        indicate if you would like a response to the email. Thanks for sending this.
+        \nAl Tauber</string>
+    <string name="myEmail">adt.androidapps@gmail.com</string>
+    <string name="emailMsg">Pick an Email provider</string>
+
+    <string name="desc_list_item_icon">Item Icon</string>
+    <string name="setGPS">set Logger</string>
+    <string name="slctGPS">Select your GPS logger</string>
+    <string name="noGPSsel">not selected</string>
+    <string name="allowInsecure">allow insecure\nconnect</string>
+    <string name="allowInsecureWide">allow insecure connect</string>
+    <string name="txNMEAinp">display frequeny</string>
+    <string name="txtRS">reset</string>
+    <string name="txtRSdone">reset completed</string>
+    <string name="epoDone">AGPS update ended %1$s</string>
+    <string name="blkOf">blocks of</string>
+
+    <string name="btnSave">Save Settings</string>
+    <string name="btnFTPsel">Select FTP URL</string>
+    <string name="btnFTPadd">Add FTP Site</string>
+    <string name="btnEPOdl">Download AGPS file</string>
+    <string name="btnConnect">Connect</string>
+    <string name="btnUpdtEPO">Update AGPS data</string>
+    <string name="btnResetEPO">Clear AGPS data</string>
+    <string name="btngetEPOfile">find EPO file</string>
+    <string name="btn_connect">Connect</string>
+    <string name="btn_pause">Pause Log</string>
+    <string name="btnNMEASave">Save</string>
+    <string name="btnNMEAdflt">Default</string>
+    <string name="btnNMEApause">Pause</string>
+    <string name="btnNMEAresume">Resume</string>
+    <string name="btnCold">cold</string>
+    <string name="btnWarm">warm</string>
+    <string name="btnHot">hot</string>
+    <string name="btnFactory">factory</string>
+    <string name="btnErase">Erase GPS Records</string>
+    <string name="btnDlL">Download Log</string>
+    <string name="btnDNLDepo">Download EPO file</string>
+    <string name="btnAPNDepo">Append EPO file</string>
+    <string name="btnChkDl">Check Download</string>
+    <string name="btnBfile">Select BIN file</string>
+    <string name="btnBcvrt">Create GPX file</string>
+    <string name="btnEfile">Select EPO file</string>
+    <string name="btnAfile">Select log file</string>
+    <string name="btnLfile">Select Local file</string>
+
+    <string name="BfileTxt">select a binary file</string>
+    <string name="oneTrack">write one track</string>
+    <string name="epo60">60 byte EPO SET</string>
+    <string name="epo72">72 byte EPO SET</string>
+    <string name="badEPO">invalid EPO file</string>
+
+    <string name="nav_home">Home</string>
+    <string name="nav_getlog">Download Log</string>
+    <string name="nav_clrlog">Erase GPS Log</string>
+    <string name="nav_makegpx">Make GPX file</string>
+    <string name="nav_getepo">Get EPO file</string>
+    <string name="nav_checkepo">Check EPO file</string>
+    <string name="nav_updtagps">Update AGPS</string>
+    <string name="nav_settings">Update Settings</string>
+    <string name="nav_email">Send App Log</string>
+    <string name="nav_help">Help</string>
+    <string name="nav_about">About</string>
+    <string name="nav_exit">Exit</string>
+
+    <string name="NMEAsettings"></string>
+    <string name="appVersion">app version</string>
+
+    <string name="aFTPid">File type - 60/70/both</string>
+    <string name="aFTPdesc">Tag for selection list</string>
+    <string name="mFTP_IP">FTP IP or URL</string>
+    <string name="mFTP_port">port #</string>
+    <string name="mFTP_userid">FTP userid</string>
+    <string name="mFTP_pswd">password</string>
+    <string name="mFTP_file">EPO file name</string>
+    <string name="mLCL_file">local file name</string>
+    <string name="FTPhdr">FTP Download</string>
+    <string name="HTPhdr">HTTP Download</string>
+
+
+    <string name="tvByTime">by time</string>
+    <string name="tvByDist">by distance</string>
+    <string name="tvSpdOvr">speed over</string>
+    <string name="txvByT">Sec.</string>
+    <string name="txvByD">meters</string>
+    <string name="txvByS">km/h</string>
+    <string name="txvAul">Recording frequency</string>
+
+    <!-- preferences screen -->
+    <string name="fonts">Screen Font Preferences</string>
+    <string name="homeFont">Home screen font</string>
+    <string name="setBtns">Settings screen buttons font</string>
+    <string name="setHtml">Settings screen table font</string>
+    <string name="AGPSsize">AGPS memory size - days</string>
+    <string name="debugPref">Log Trace Level</string>
+    <string name="cmdDelay">MTK command response delay</string>
+    <string name="cmdRetries">MTK command retries</string>
+    <string name="epoDelay">EPO load send/receive delay</string>
+    <string name="disNmeaDown">Disable NMEA when downloading</string>
+    <string name="disLogDown">Disable GPS logging when downloading</string>
+    <string name="downDelay">Download send/receive delay</string>
+
+    <!-- contentDescription names -->
+    <string name="getEPOimage">getEPOimage</string>
+    <string name="getLogimage">getLogimage</string>
+</resources>

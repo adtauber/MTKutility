@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_Home"
+            android:visible="false"
+            android:icon="@mipmap/ic_home"
+            android:title="@string/nav_home" />
+        <item
+            android:id="@+id/nav_GetLog"
+            android:visible="false"
+            android:icon="@mipmap/ic_getlog"
+            android:title="@string/nav_getlog" />
+        <item
+            android:id="@+id/nav_clrLog"
+            android:visible="false"
+            android:icon="@mipmap/ic_clrlog"
+            android:title="@string/nav_clrlog" />
+        <item
+            android:id="@+id/nav_MakeGPX"
+            android:visible="false"
+            android:icon="@mipmap/ic_makegpx"
+            android:title="@string/nav_makegpx" />
+        <item
+            android:id="@+id/nav_GetEPO"
+            android:visible="false"
+            android:icon="@mipmap/ic_getepo"
+            android:title="@string/nav_getepo" />
+        <item
+            android:id="@+id/nav_CheckEPO"
+            android:visible="false"
+            android:icon="@mipmap/ic_checkepo"
+            android:title="@string/nav_checkepo" />
+        <item
+            android:id="@+id/nav_UpdtAGPS"
+            android:visible="false"
+            android:icon="@mipmap/ic_updtgps"
+            android:title="@string/nav_updtagps" />
+        <item
+            android:id="@+id/nav_Settings"
+            android:visible="false"
+            android:icon="@mipmap/ic_settings"
+            android:title="@string/nav_settings" />
+        <item
+            android:id="@+id/nav_eMail"
+            android:visible="false"
+            android:icon="@mipmap/ic_email"
+            android:title="@string/nav_email" />
+        <item
+            android:id="@+id/nav_Help"
+            android:visible="true"
+            android:icon="@mipmap/ic_help"
+            android:title="@string/nav_help" />
+        <item
+            android:id="@+id/nav_About"
+            android:visible="true"
+            android:icon="@mipmap/ic_about"
+            android:title="@string/nav_about" />
+        <item
+            android:id="@+id/nav_Exit"
+            android:icon="@mipmap/ic_exit"
+            android:title="@string/nav_exit" />
+    </group>
+
+</menu>

@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+ * @author Alex Tauber
+ *
+ * This file is part of the open source Android app MTKutility2. You can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, version 3 of the License. This extends to files included that were authored by
+ * others and modified to make them suitable for this app. All files included were subject to
+ * open source licensing.
+ *
+ * MTKutility2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details. You can review a copy of the
+ * GNU General Public License at http://www.gnu.org/licenses.
+
+
+-->
+
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginTop="?attr/actionBarSize"
+    android:background="#FFFFFF">
+
+    <ImageView
+        android:id="@+id/ic_makegpx"
+        android:layout_width="wrap_content"
+        android:layout_height="90dp"
+        android:layout_marginTop="10dp"
+        android:adjustViewBounds="true"
+        android:src="@mipmap/ic_makegpx"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/lla"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/rounded_border"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@+id/ic_makegpx">
+
+        <Button
+            android:id="@+id/getfile"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:minHeight="1dp"
+            android:text="@string/btnBfile" />
+
+        <TextView
+            android:id="@+id/fileName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="5dp"
+            android:layout_marginBottom="10dp"
+            android:minHeight="1dp"
+            android:text="@string/BfileTxt"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="@color/colorblack"
+            app:layout_constraintTop_toBottomOf="@+id/getfile" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/rounded_border"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@+id/lla">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_horizontal"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/cbxTxt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="1dp"
+                android:text="@string/oneTrack"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/colorblack" />
+
+            <CheckBox
+                android:id="@+id/cbxOne"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                app:layout_constraintLeft_toRightOf="@+id/cbxTxt" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/makeGPX"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="10dp"
+            android:minHeight="1dp"
+            android:text="@string/btnBcvrt"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+    </LinearLayout>
+
+
+</android.support.constraint.ConstraintLayout>

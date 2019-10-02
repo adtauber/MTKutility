@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ * @author Alex Tauber
+ *
+ * This file is part of the open source Android app MTKutility2. You can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as published by the Free Software
+ * Foundation, version 3 of the License. This extends to files included that were authored by
+ * others and modified to make them suitable for this app. All files included were subject to
+ * open source licensing.
+ *
+ * MTKutility2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details. You can review a copy of the
+ * GNU General Public License at http://www.gnu.org/licenses.
+-->
+
+<resources>
+    <string-array name="debugValue">
+        <item>normal</item>
+        <item>verbose</item>
+        <item>verbose level 2</item>
+        <item>verbose level 3</item>
+    </string-array>
+    <string-array name="debugReturn">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </string-array>
+	
+	
+    <string-array name="listBlockSizeShow">
+        <item>2048 bytes</item>
+        <item>1024 bytes</item>
+        <item>512 bytes</item>
+        <item>256 bytes</item>
+        <item>128 bytes</item>
+        <item>64 bytes</item>
+        <item>32 bytes</item>
+    </string-array>
+    <string-array name="listBlockSizeReturn">
+        <item>2048</item>
+        <item>1024</item>
+        <item>512</item>
+        <item>256</item>
+        <item>128</item>
+        <item>64</item>
+        <item>32</item>
+    </string-array>
+
+    <string-array name="listNMEAshow">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </string-array>
+
+    <string-array name="F60">
+        <item>Qstarz 60 byte</item>
+        <item>60.248.237.25</item>
+        <item>tsi0001</item>
+        <item>tweyet</item>
+    </string-array>
+
+    <string-array name="F72">
+        <item>GlobalTop 72 byte</item>
+        <item>ftp.gtop-tech.com</item>
+        <item>gtopagpsenduser01</item>
+        <item>enduser080807</item>
+    </string-array>
+
+</resources>
