@@ -16,7 +16,6 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="match_parent"
     android:layout_marginTop="?attr/actionBarSize"
@@ -37,6 +36,7 @@
 
         <Button
             android:id="@+id/wvbtnRec"
+            style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentTop="true"
@@ -46,6 +46,7 @@
 
         <Button
             android:id="@+id/wvbtnMtd"
+            style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/wvbtnRec"
@@ -56,6 +57,7 @@
 
         <Button
             android:id="@+id/wvbtnNav"
+            style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/wvbtnMtd"
@@ -66,6 +68,7 @@
 
         <Button
             android:id="@+id/wvbtnSat"
+            style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/wvbtnNav"

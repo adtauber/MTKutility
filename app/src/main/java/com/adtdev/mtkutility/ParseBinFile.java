@@ -116,7 +116,7 @@ public class ParseBinFile implements Runnable {
 		BufferedInputStream reader;
 		try {
 			FileInputStream freader = new FileInputStream(bin_file);
-			Log(String.format("Reading bin file: %s", bin_file.toString()));
+			mLog(String.format("Reading bin file: %s", bin_file.toString()));
 			reader = new BufferedInputStream(freader, SIZEOF_SECTOR);
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
@@ -126,7 +126,7 @@ public class ParseBinFile implements Runnable {
 //		gpxPath = gpxPath.toLowerCase(Locale.CANADA);
 //		gpxPath = gpxPath.replace(".bin", ".gpx");
 		File gpx_file = new File(gpxPath);
-		Log("Creating GPX file: "+gpx_file.toString());
+		mLog("Creating GPX file: "+gpx_file.toString());
 //		sendMessageToMessageField("Creating GPX file: "+gpx_file.toString());
 		BufferedWriter gpx_writer = null;
 		try {
@@ -146,7 +146,7 @@ public class ParseBinFile implements Runnable {
 		int totalNrOfSectors = Double.valueOf(bin_file.length() / SIZEOF_SECTOR).intValue();
 		if (bin_file.length() % SIZEOF_SECTOR != 0){
 			totalNrOfSectors++;}
-		Log("totalNrOfSectors: "+totalNrOfSectors);
+		mLog("totalNrOfSectors: "+totalNrOfSectors);
 		String formattedDate = "";
 		int record_count_total=0;
 		while ((bytes_in_sector = reader.read(buffer, 0, SIZEOF_SECTOR)) > 0) {
@@ -165,10 +165,10 @@ public class ParseBinFile implements Runnable {
 			// Skip the header (which is 0x200 bytes long)
 			buf.position(0x200);
 
-			Log(String.format("Read %d bytes from bin file", bytes_in_sector));
-			Log(String.format("Reading sector"));
-			Log(String.format("Log format %x", log_format));
-			Log(String.format("Nr of sector records: %d", nrOfRecordsInSector));
+			mLog(String.format("Read %d bytes from bin file", bytes_in_sector));
+			mLog(String.format("Reading sector"));
+			mLog(String.format("Log format %x", log_format));
+			mLog(String.format("Nr of sector records: %d", nrOfRecordsInSector));
 
 			int record_count_sector = 0;
 			while (record_count_sector < nrOfRecordsInSector) {
@@ -183,7 +183,7 @@ public class ParseBinFile implements Runnable {
 						&& tmp[14] == (byte) 0xBB && tmp[13] == (byte) 0xBB
 						&& tmp[12] == (byte) 0xBB){
 					// So we found a record separator..
-					Log("Found a record separator");
+					mLog("Found a record separator");
 
 					// if open, close the current trk section
 					try {if (!one_trk && gpx_in_trk) {
@@ -197,23 +197,23 @@ public class ParseBinFile implements Runnable {
 					if (seperator_type == 0x02) {
 						log_format = buf.getInt();
 						buf.position(buf.position() + 4);
-						Log(String.format("Log format has changed to %x", log_format));
+						mLog(String.format("Log format has changed to %x", log_format));
 					} else {
 						buf.position(buf.position() + 8);}
 					continue;
 				} else if (String.valueOf(tmp).contains("HOLUXGR241LOGGER")) {
 					LOG_IS_HOLUX_M241 = true;
-					Log("Found a HOLUX M241 separator!");
+					mLog("Found a HOLUX M241 separator!");
 					byte[] tmp4 = new byte[4];
 					buf.get(tmp4);
 					if (tmp4[0] == (byte) 0x20 && tmp4[1] == (byte) 0x20
 							&& tmp4[2] == (byte) 0x20 && tmp4[3] == (byte) 0x20){
-						Log("Found a HOLUX M241 1.3 firmware!");
+						mLog("Found a HOLUX M241 1.3 firmware!");
 					} else {
 						buf.position(buf.position() - 4);}
 					continue;
 				}else if (Arrays.equals(tmp, emptyseparator)) {
-					Log("Empty space, assume end of sector");
+					mLog("Empty space, assume end of sector");
 					break;
 				} else {
 					buf.position(buf.position() - seperator_length);}
@@ -228,15 +228,15 @@ public class ParseBinFile implements Runnable {
 				double lon = 0;
 				float height = 0;
 				float speed = 0;
-				Log(String.format("Read record: %d of %d position %x", record_count_sector, nrOfRecordsInSector, buf.position()));
+				mLog(String.format("Read record: %d of %d position %x", record_count_sector, nrOfRecordsInSector, buf.position()));
 				if ((log_format & LOG_FORMAT_UTC) == LOG_FORMAT_UTC) {
 					bytes_read += 4;
 					utc_time = buf.getInt();
-					Log(String.format("UTC time %d", utc_time));}
+					mLog(String.format("UTC time %d", utc_time));}
 				if ((log_format & LOG_FORMAT_VALID) == LOG_FORMAT_VALID) {
 					bytes_read += 2;
 					valid = buf.getShort();
-					Log(String.format("Valid %d", valid));}
+					mLog(String.format("Valid %d", valid));}
 				if ((log_format & LOG_FORMAT_LATITUDE) == LOG_FORMAT_LATITUDE) {
 					if (LOG_IS_HOLUX_M241) {
 						bytes_read += 4;
@@ -244,7 +244,7 @@ public class ParseBinFile implements Runnable {
 					} else {
 						bytes_read += 8;
 						lat = buf.getDouble();}
-					Log(String.format("Latitude %f", lat));}
+					mLog(String.format("Latitude %f", lat));}
 
 				if ((log_format & LOG_FORMAT_LONGITUDE) == LOG_FORMAT_LONGITUDE) {
 					if (LOG_IS_HOLUX_M241) {
@@ -253,7 +253,7 @@ public class ParseBinFile implements Runnable {
 					} else {
 						bytes_read += 8;
 						lon = buf.getDouble();}
-					Log(String.format("Longitude %f", lon));}
+					mLog(String.format("Longitude %f", lon));}
 				if ((log_format & LOG_FORMAT_HEIGHT) == LOG_FORMAT_HEIGHT) {
 					if (LOG_IS_HOLUX_M241) {
 						bytes_read += 3;
@@ -265,40 +265,40 @@ public class ParseBinFile implements Runnable {
 					} else {
 						bytes_read += 4;
 						height = buf.getFloat();}
-					Log(String.format("Height %f m", height));}
+					mLog(String.format("Height %f m", height));}
 				if ((log_format & LOG_FORMAT_SPEED) == LOG_FORMAT_SPEED) {
 					bytes_read += 4;
 					speed = buf.getFloat() / 3.6f;
-					Log(String.format("Speed %f m/s", speed));}
+					mLog(String.format("Speed %f m/s", speed));}
 				if ((log_format & LOG_FORMAT_HEADING) == LOG_FORMAT_HEADING) {
 					bytes_read += 4;
 					float heading = buf.getFloat();
-					Log(String.format("Heading %f", heading));}
+					mLog(String.format("Heading %f", heading));}
 				if ((log_format & LOG_FORMAT_DSTA) == LOG_FORMAT_DSTA) {
 					bytes_read += 2;
 					short dsta = buf.getShort();
-					Log(String.format("DSTA %d", dsta));}
+					mLog(String.format("DSTA %d", dsta));}
 				if ((log_format & LOG_FORMAT_DAGE) == LOG_FORMAT_DAGE) {
 					bytes_read += 4;
 					int dage = buf.getInt();
-					Log(String.format("DAGE %d", dage));}
+					mLog(String.format("DAGE %d", dage));}
 				if ((log_format & LOG_FORMAT_PDOP) == LOG_FORMAT_PDOP) {
 					bytes_read += 2;
 					short pdop = buf.getShort();
-					Log(String.format("PDOP %d", pdop));}
+					mLog(String.format("PDOP %d", pdop));}
 				if ((log_format & LOG_FORMAT_HDOP) == LOG_FORMAT_HDOP) {
 					bytes_read += 2;
 					short hdop = buf.getShort();
-					Log(String.format("HDOP %d", hdop));}
+					mLog(String.format("HDOP %d", hdop));}
 				if ((log_format & LOG_FORMAT_VDOP) == LOG_FORMAT_VDOP) {
 					bytes_read += 2;
 					short vdop = buf.getShort();
-					Log(String.format("VDOP %d", vdop));}
+					mLog(String.format("VDOP %d", vdop));}
 				if ((log_format & LOG_FORMAT_NSAT) == LOG_FORMAT_NSAT) {
 					bytes_read += 2;
 					byte nsat = buf.get();
 					byte nsat_in_use = buf.get();
-					Log(String.format("NSAT %d %d", (int) nsat, (int) nsat_in_use));}
+					mLog(String.format("NSAT %d %d", (int) nsat, (int) nsat_in_use));}
 				if ((log_format & LOG_FORMAT_SID) == LOG_FORMAT_SID) {
 					// Large section to parse
 					int satdata_count = 0;
@@ -310,23 +310,23 @@ public class ParseBinFile implements Runnable {
 						bytes_read += 2;
 						short satdata_inview = buf.getShort();
 
-						Log(String.format("SID %d", (int) satdata_sid));
-						Log(String.format("SID in use %d", (int) satdata_inuse));
-						Log(String.format("SID in view %d", (int) satdata_inview));
+						mLog(String.format("SID %d", (int) satdata_sid));
+						mLog(String.format("SID in use %d", (int) satdata_inuse));
+						mLog(String.format("SID in view %d", (int) satdata_inview));
 
 						if (satdata_inview > 0) {
 							if ((log_format & LOG_FORMAT_ELEVATION) == LOG_FORMAT_ELEVATION) {
 								bytes_read += 2;
 								short sat_elevation = buf.getShort();
-								Log(String.format("Satellite ELEVATION %d", (int) sat_elevation));}
+								mLog(String.format("Satellite ELEVATION %d", (int) sat_elevation));}
 							if ((log_format & LOG_FORMAT_AZIMUTH) == LOG_FORMAT_AZIMUTH) {
 								bytes_read += 2;
 								short sat_azimuth = buf.getShort();
-								Log(String.format("Satellite AZIMUTH %d", (int) sat_azimuth));}
+								mLog(String.format("Satellite AZIMUTH %d", (int) sat_azimuth));}
 							if ((log_format & LOG_FORMAT_SNR) == LOG_FORMAT_SNR) {
 								bytes_read += 2;
 								short sat_snr = buf.getShort();
-								Log(String.format("Satellite SNR %d", (int) sat_snr));}
+								mLog(String.format("Satellite SNR %d", (int) sat_snr));}
 							satdata_count++;}
 						if (satdata_count >= satdata_inview) {
 							break;}
@@ -334,15 +334,15 @@ public class ParseBinFile implements Runnable {
 				if ((log_format & LOG_FORMAT_RCR) == LOG_FORMAT_RCR) {
 					bytes_read += 2;
 					short rcr = buf.getShort();
-					Log(String.format("RCR %d", rcr));}
+					mLog(String.format("RCR %d", rcr));}
 				if ((log_format & LOG_FORMAT_MILLISECOND) == LOG_FORMAT_MILLISECOND) {
 					bytes_read += 2;
 					short millisecond = buf.getShort();
-					Log(String.format("Millisecond %d", millisecond));}
+					mLog(String.format("Millisecond %d", millisecond));}
 				if ((log_format & LOG_FORMAT_DISTANCE) == LOG_FORMAT_DISTANCE) {
 					bytes_read += 8;
 					double distance = buf.getDouble();
-					Log(String.format("Distance %f", distance));}
+					mLog(String.format("Distance %f", distance));}
 
 				buf.position((buf.position() - bytes_read));
 				byte[] tmp2 = new byte[bytes_read];
@@ -354,7 +354,7 @@ public class ParseBinFile implements Runnable {
 					buf.get();}
 				// And the final character is the checksum count
 				byte read_checksum = buf.get();
-				Log(String.format("bytes_read %d Checksum %x read checksum %x", bytes_read, checksum, read_checksum));
+				mLog(String.format("bytes_read %d Checksum %x read checksum %x", bytes_read, checksum, read_checksum));
 
 				try {if (valid != VALID_NOFIX && checksum == read_checksum) {
 					if (!gpx_in_trk) {
@@ -391,7 +391,7 @@ public class ParseBinFile implements Runnable {
 			record_count_total = record_count_total+nrOfRecordsInSector;
 			if (bytes_in_sector < SIZEOF_SECTOR) {
 				// Reached the end of the file or something is wrong
-				Log(String.format("End of file!"));
+				mLog(String.format("End of file!"));
 				break;}
 			// do a flush after each sector is read
 			try {
@@ -461,7 +461,7 @@ public class ParseBinFile implements Runnable {
 		java.util.Date date = new java.util.Date(time * 1000);
 //		String formattedDate = formatter.format(date);
 		String formattedDate = formatter.format(add1024w(date));    //dyj
-		Log(String.format("formattedDate %s", formattedDate));
+		mLog(String.format("formattedDate %s", formattedDate));
 		writer.write(String
 				.format(Locale.US,
 						"<trkpt lat=\"%.9f\" lon=\"%.9f\">\n  <ele>%.6f</ele>\n  <time>%s</time>\n  <speed>%.6f</speed>\n</trkpt>\n",
@@ -474,8 +474,8 @@ public class ParseBinFile implements Runnable {
 		writer.write("</trkseg>\n</trk>\n");
 	}
 
-	private void Log(String text) {
-//        mL.mLog(mL.VB1, "ParseBinFile.Log() +++ " + text);
+	private void mLog(String text) {
+//        mL.mLog(mL.VB1, "ParseBinFile.mLog() +++ " + text);
 //		if (log_writer != null) {
 //			try {log_writer.append(text);
 //			log_writer.append('\n');

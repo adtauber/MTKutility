@@ -41,7 +41,7 @@ public class HelpFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mContext = Main.mContext;
         logWriter = Main.logWriter;
-        Log("HelpFragment.onCreateView()");
+        mLog("HelpFragment.onCreateView()");
 
         // Inflate the layout for this fragment
         mV = inflater.inflate(R.layout.webview, container, false);
@@ -51,7 +51,7 @@ public class HelpFragment extends Fragment {
     }
 
     private void selectSource() {
-        Log("HelpFragment.selectSource()");
+        mLog("HelpFragment.selectSource()");
         //@formatter:off
         String[] cs = {
                 getString(R.string.hs00), //Things You Need to Know
@@ -74,47 +74,47 @@ public class HelpFragment extends Fragment {
                 switch (idx) {
                     case 0:
                         helpXML = "file:///android_asset/overview.html";
-                        Log("HelpFragment.selectSource() - selected overview.html");
+                        mLog("HelpFragment.selectSource() - selected overview.html");
                         break;
                     case 1:
                         helpXML = "file:///android_asset/appPref.html";
-                        Log("HelpFragment.selectSource() - selected appPref.html");
+                        mLog("HelpFragment.selectSource() - selected appPref.html");
                         break;
                     case 2:
                         helpXML = "file:///android_asset/home.html";
-                        Log("HelpFragment.selectSource() - selected home.html");
+                        mLog("HelpFragment.selectSource() - selected home.html");
                         break;
                     case 3:
                         helpXML = "file:///android_asset/download.html";
-                        Log("HelpFragment.selectSource() - selected download.html");
+                        mLog("HelpFragment.selectSource() - selected download.html");
                         break;
                     case 4:
                         helpXML = "file:///android_asset/eraseGPS.html";
-                        Log("HelpFragment.selectSource() - selected eraseGPS.html");
+                        mLog("HelpFragment.selectSource() - selected eraseGPS.html");
                         break;
                     case 5:
                         helpXML = "file:///android_asset/makeGPX.html";
-                        Log("HelpFragment.selectSource() - selected makeGPX.html");
+                        mLog("HelpFragment.selectSource() - selected makeGPX.html");
                         break;
                     case 6:
                         helpXML = "file:///android_asset/getEPO.html";
-                        Log("HelpFragment.selectSource() - selected getEPO.html");
+                        mLog("HelpFragment.selectSource() - selected getEPO.html");
                         break;
                     case 7:
                         helpXML = "file:///android_asset/updateAGPS.html";
-                        Log("HelpFragment.selectSource() - selected updateAGPS.html");
+                        mLog("HelpFragment.selectSource() - selected updateAGPS.html");
                         break;
                     case 8:
                         helpXML = "file:///android_asset/settings.html";
-                        Log("HelpFragment.selectSource() - selected settings.html");
+                        mLog("HelpFragment.selectSource() - selected settings.html");
                         break;
                     case 9:
                         helpXML = "file:///android_asset/sendlog.html";
-                        Log("HelpFragment.selectSource() - selected sendlog.html");
+                        mLog("HelpFragment.selectSource() - selected sendlog.html");
                         break;
                     case 10:
                         helpXML = "file:///android_asset/exit.html";
-                        Log("HelpFragment.selectSource() - selected exit.html");
+                        mLog("HelpFragment.selectSource() - selected exit.html");
                         break;
                 }
                 dialog.dismiss();
@@ -123,7 +123,7 @@ public class HelpFragment extends Fragment {
         }).show();
     }//selectSource()
 
-    private void Log(String msg) {
+    private void mLog(String msg) {
         String time = DateFormat.getDateTimeInstance().format(new Date());
         time = time.substring(12);
         time = time.replace("AM","");

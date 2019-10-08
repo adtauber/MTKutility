@@ -31,7 +31,7 @@ public class getGPSid extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Main.Log(0, "getGPSinfo.onCreateDialog()");
+        Main.mLog(0, "getGPSinfo.onCreateDialog()");
 
         final ArrayAdapter<String> BTnameArray = new
                 ArrayAdapter<String>(getActivity(), android.R.layout.select_dialog_singlechoice);

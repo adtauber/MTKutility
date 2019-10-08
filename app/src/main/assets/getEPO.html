@@ -1,6 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html><head>
 
+
+
+
+
+
   
   <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>getEPO</title></head><body>
 
@@ -15,19 +20,19 @@
 Prediction Orbit (EPO) file for your AGPS data update.<br>
 <br>
 There are
-2 flavors of EPO data, 60 byte data SET and 72 byte data SET.&nbsp;&nbsp;</span> MTKutility currently has 2 sites available for EPO data -&nbsp; the <span style="color: rgb(51, 51, 255);">Qstarz 60 byte</span> site, and the <span style="color: rgb(51, 51, 255);">Globaltop 72 byte</span>
-site and is delivered with the Qstarz site selected.&nbsp; Use the
-<span style="font-weight: bold; font-style: italic; color: rgb(0, 0, 153);">Select
-FTP URL</span> button to change sites and the <span style="font-style: italic;"><span style="font-weight: bold;">Save Settings</span></span><span style="font-weight: bold; font-style: italic; color: rgb(0, 0, 153);"></span> button to save the change for future use.&nbsp; You will need to rely on trail and error if you do not know
+2 flavors of EPO data, 60 byte data SET and 72 byte data SET.&nbsp;&nbsp;</span> MTKutility currently has 2 sites available for EPO data -&nbsp; the <span style="color: rgb(0, 0, 153);"><span style="color: rgb(51, 51, 255);">Qstarz 60</span> byte</span> site, and the <span style="color: rgb(51, 51, 255);">Globaltop 72 byte</span>
+site. &nbsp; It is delivered with the Qstarz site selected.&nbsp; Use the
+<span style="font-weight: bold; font-style: italic; color: rgb(51, 51, 255);">Select
+FTP URL</span> button to change sites and the <span style="font-style: italic; color: rgb(51, 51, 255); font-weight: bold;">Save Settings</span><span style="font-weight: bold; font-style: italic; color: rgb(0, 0, 153);"></span> button to save the change for future use.&nbsp; You will need to rely on trail and error if you do not know
 which site to pick.&nbsp; My Qstarz logger will accept 72 byte records
 without error but it does not store the EPO data - and it takes forever
 (hours) to complete.<br>
 <br>
-The app preference <span style="color: red;">AGPS memory size - days</span>
+The app preference <span style="color: rgb(204, 0, 0);">AGPS memory size - days</span>
 is associated with AGPS updates.&nbsp; Your logger will have a maximum
 size for stored records. I believe most loggers store 7 days but the
 sure way to know is update the AGPS using your PC application.&nbsp;
-Then note the <span style="color: rgb(0, 0, 153);">EPO set</span>
+Then note the <span style="color: rgb(51, 51, 255);">EPO set</span>
 value on the <span style="color: rgb(0, 170, 0); font-weight: bold;">Home</span>
 screen after you connect, divide this by 4, and set the result in your
 preferences.<br>
@@ -53,13 +58,17 @@ collected to do a full AGPS update.<br>
 <br>
 
 The <span style="color: rgb(51, 51, 255);"></span><span style="color: rgb(51, 51, 255);">Globaltop 72 byte</span> site also
-has 60 byte files (MTK7d.EPO, etc.) but the last updates have not been reliable.<br>
+has 60 byte files (MTK7d.EPO, etc.) but the updates have not been reliable.<br>
 <br>
-You can add sites with the <span style="font-style: italic;"><span style="font-weight: bold;">Add</span></span><span style="font-weight: bold; font-style: italic; color: rgb(0, 0, 153);">
+You can add sites with the <span style="font-style: italic; color: rgb(51, 51, 255);"><span style="font-weight: bold;">Add</span></span><span style="font-weight: bold; font-style: italic; color: rgb(51, 51, 255);">
 FTP site</span>
 button.&nbsp; You will need the FTP IP and the&nbsp; FTP userid and
 password.&nbsp; GPS merchants do not normally publish this information
 in their documentation so you will need to use network traffic capture
 on your PC to find the values.&nbsp; The tool I used for this is
-Wireshark.&nbsp; <br>
+Wireshark.&nbsp; I documented the procedure I used, including
+screenshots, so that I don't have to relearn every time.&nbsp; Please
+send an email requesting this document if your logger isn't a Qstarz
+and you are willing to try to get the FTP login info.&nbsp; Use <span style="font-style: italic; color: rgb(51, 51, 255);"><span style="font-weight: bold;">Remove</span></span><span style="font-weight: bold; font-style: italic; color: rgb(51, 51, 255);">
+FTP site</span>&nbsp; to remove an item from the saved FTP site list.<br>
 </body></html>

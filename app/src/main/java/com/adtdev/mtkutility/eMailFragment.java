@@ -73,7 +73,7 @@ public class eMailFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log(0, "eMailFragment.onCreateView()");
+        mLog(0, "eMailFragment.onCreateView()");
         publicPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         publicPrefEditor = publicPrefs.edit();
         appPrefs = mContext.getSharedPreferences("otherprefs", Context.MODE_PRIVATE);
@@ -95,7 +95,7 @@ public class eMailFragment extends Fragment {
         getefile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log(0, "eMailFragment.onCreateView() button " + getefile.getText() + " pressed");
+                mLog(0, "eMailFragment.onCreateView() button " + getefile.getText() + " pressed");
                 getfile();
             }
         });
@@ -106,7 +106,7 @@ public class eMailFragment extends Fragment {
         sendefile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log(0, "eMailFragment.onCreateView() button " + sendefile.getText() + " pressed");
+                mLog(0, "eMailFragment.onCreateView() button " + sendefile.getText() + " pressed");
                 sendEmail(0);
             }
         });
@@ -115,7 +115,7 @@ public class eMailFragment extends Fragment {
     }//onCreateView()
 
     private void getfile() {
-        Log(0, "eMailFragment.getfile()");
+        mLog(0, "eMailFragment.getfile()");
         startPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
         startPath = startPath + "/mtkutility";
         Intent intent = new Intent(mContext, FileChooser.class);
@@ -129,7 +129,7 @@ public class eMailFragment extends Fragment {
 
     // Listen for results.
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log(0, "eMailFragment.onActivityResult()");
+        mLog(0, "eMailFragment.onActivityResult()");
         // See which child activity is calling us back.
         if (requestCode == REQUEST_PATH) {
             if (resultCode == RESULT_OK) {
@@ -140,7 +140,7 @@ public class eMailFragment extends Fragment {
         }
     }//onActivityResult()
 
-    private void Log(int mode, String msg) {
+    private void mLog(int mode, String msg) {
         if (!logFileIsOpen) {
             return;
         }
@@ -181,7 +181,7 @@ public class eMailFragment extends Fragment {
     }//Log()
 
     public void sendEmail(int idx) {
-        Log(0, "eMailFragment.sendEmail()");
+        mLog(0, "eMailFragment.sendEmail()");
         switch (idx){
             case 0:
                 if (!eFile.exists() || !eFile.canRead()) return;

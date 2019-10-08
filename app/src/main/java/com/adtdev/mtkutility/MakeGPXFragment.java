@@ -86,7 +86,7 @@ public class MakeGPXFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log(0, "MakeGPXFragment.onCreateView()");
+        mLog(0, "MakeGPXFragment.onCreateView()");
         publicPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         publicPrefEditor = publicPrefs.edit();
         appPrefs = mContext.getSharedPreferences("otherprefs", Context.MODE_PRIVATE);
@@ -98,7 +98,7 @@ public class MakeGPXFragment extends Fragment {
 
         cbxOne.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                Log(1, "+++ HomeFragment.onCreateView() +++ allow insecure checkbox changed");
+                mLog(1, "+++ HomeFragment.onCreateView() +++ allow insecure checkbox changed");
                 cbxone = isChecked;
             }
         });
@@ -108,7 +108,7 @@ public class MakeGPXFragment extends Fragment {
         getfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log(0, "+++ MakeGPXFragment.onCreateView() +++ button " + getfile.getText() + " pressed");
+                mLog(0, "+++ MakeGPXFragment.onCreateView() +++ button " + getfile.getText() + " pressed");
                 getfile();
             }
         });
@@ -118,7 +118,7 @@ public class MakeGPXFragment extends Fragment {
         makeGPX.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log(0, "+++ MakeGPXFragment.onCreateView() +++ button " + makeGPX.getText() + " pressed");
+                mLog(0, "+++ MakeGPXFragment.onCreateView() +++ button " + makeGPX.getText() + " pressed");
                 makeGPX();
             }
         });
@@ -127,13 +127,13 @@ public class MakeGPXFragment extends Fragment {
     }//onCreateView()
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        Log(0, "MakeGPXFragment.onViewCreated()");
+        mLog(0, "MakeGPXFragment.onViewCreated()");
         debugLVL = Integer.parseInt(publicPrefs.getString("debugPref", "0"));
         makeGPX.setEnabled(false);
     }//onViewCreated()
 
     private void getfile() {
-        Log(0, "MakeGPXFragment.onCreateView()");
+        mLog(0, "MakeGPXFragment.onCreateView()");
         startPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
         startPath = startPath + "/mtkutility/bin";
         Intent intent = new Intent(mContext, FileChooser.class);
@@ -180,7 +180,7 @@ public class MakeGPXFragment extends Fragment {
         }
     }//onActivityResult()
 
-    private void Log(int mode, String msg) {
+    private void mLog(int mode, String msg) {
         if (!logFileIsOpen) {
             return;
         }

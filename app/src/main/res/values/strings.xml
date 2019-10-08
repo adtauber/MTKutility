@@ -10,7 +10,6 @@
     <string name="back1">press back again to exit mtkutility</string>
     <string name="back2">closing MTKutility</string>
     <string name="pleaseNav">please navigate to Home screen first</string>
-    <string name="homeNav">press back again to go to home screen</string>
 
     <string name="nowrite">MTKutility needs write internal storage permission</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -29,6 +28,7 @@
     <string name="noLogDL">MTK logger has 0 log records - nothing to download</string>
     <string name="noLogClr">MTK logger has 0 log records - nothing to erase</string>
     <string name="GPSrecs">GPS has %1$d records</string>
+    <string name="logrecs">%1$d log records</string>
     <string name="makeFolderErr">ERROR - create folder %1$s failed</string>
     <string name="dlDone"> download is done</string>
     <string name="dlAbort">aborting download - %1$s failed</string>
@@ -67,6 +67,7 @@
     <string name="intializing">starting... please wait</string>
     <string name="restored">default settings restored</string>
     <string name="logBgn">Log downlaod started %1$s</string>
+    <string name="logRS">Log download will restart at offset %1$d</string>
     <string name="logEnd">Log downlaod finished %1$s</string>
     <string name="clrBgn">Log erase started %1$s</string>
     <string name="clrEnd">Log erase finished %1$s</string>
@@ -99,6 +100,7 @@
     <string name="btnSave">Save Settings</string>
     <string name="btnFTPsel">Select FTP URL</string>
     <string name="btnFTPadd">Add FTP Site</string>
+    <string name="btnFTPdel">Remove FTP Site</string>
     <string name="btnEPOdl">Download AGPS file</string>
     <string name="btnConnect">Connect</string>
     <string name="btnUpdtEPO">Update AGPS data</string>

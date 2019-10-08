@@ -72,7 +72,7 @@ public class PreferencesFragment extends PreferenceFragment
         getPreferenceScreen().getSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(this);
         //update the shared preferences in app
-//        mL.getSharedPreference();
+        Main.getSharedPreference();
     }	//onPause()
 
     @Override

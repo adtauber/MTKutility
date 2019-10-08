@@ -66,7 +66,7 @@ public class ClrLogFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log(0, "ClrLogFragment.onCreateView()");
+        mLog(0, "ClrLogFragment.onCreateView()");
 
         publicPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         publicPrefEditor = publicPrefs.edit();
@@ -84,7 +84,9 @@ public class ClrLogFragment extends Fragment {
         btnRun.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log(0, "ClrLogFragment - button " + btnRun.getText() + " pressed");
+                Main.stopBkGrnd = false;
+                goSleep(1000);
+                mLog(0, "ClrLogFragment - button " + btnRun.getText() + " pressed");
                 new eraseLog(getActivity()).execute();
             }
         });
@@ -93,11 +95,27 @@ public class ClrLogFragment extends Fragment {
     }
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        Log(0, "ClrLogFragment.onViewCreated()");
+        mLog(0, "ClrLogFragment.onViewCreated()");
         debugLVL = Integer.parseInt(publicPrefs.getString("debugPref", "0"));
-        new getRecCount(getActivity()).execute();
         btnRun.setEnabled(false);
     }//onViewCreated()
+    @Override
+
+    public void onPause() {
+        super.onPause();
+        String curFunc = "ClrLogFragment.onPause";
+        mLog(1, curFunc);
+    }    //onPause()
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        String curFunc = "ClrLogFragment.onResume";
+        mLog(1, curFunc);
+        Main.stopBkGrnd = true;
+        goSleep(1000);
+        new getRecCount(getActivity()).execute();
+    }    //onResume()
 
     private void appendMsg(String msg) {
         mTv.append(msg + NL);
@@ -113,9 +131,8 @@ public class ClrLogFragment extends Fragment {
         });
     }//scrollDown()
 
-
     private void goSleep(int mSec) {
-        Log(3, String.format("ClrLogFragment.goSleep(%d)", mSec));
+        mLog(3, String.format("ClrLogFragment.goSleep(%d)", mSec));
         try {
             Thread.sleep(mSec);
         } catch (InterruptedException e) {
@@ -123,7 +140,7 @@ public class ClrLogFragment extends Fragment {
         }
     }//goSleep()
 
-    private void Log(int mode, String msg) {
+    private void mLog(int mode, String msg) {
         if (!logFileIsOpen) {
             return;
         }
@@ -169,25 +186,25 @@ public class ClrLogFragment extends Fragment {
         private int ix;
 
         public getRecCount(Context context) {
-            Log(0, "ClrLogFragment.getRecCount.getRecCount()");
+            mLog(0, "ClrLogFragment.getRecCount.getRecCount()");
+            Main.stopBkGrnd = false;
             mContext = context;
         }//getRecCount()
 
         protected void onPreExecute() {
-            Log(0, "ClrLogFragment.getRecCount.onPreExecute()");
+            mLog(0, "ClrLogFragment.getRecCount.onPreExecute()");
             downDelay = Integer.parseInt(publicPrefs.getString("downDelay", "50"));
             dialog = new ProgressDialog(mContext);
             this.dialog.setMessage(getString(R.string.getSetngs));
             this.dialog.show();
-            Main.stopBkGrnd = false;
         }//onPreExecute()
 
         protected Void doInBackground(Void... params) {
             String curFunc = "GetLogFragment.getRecCount.doInBackground()";
-            Log(0, curFunc);
+            mLog(0, curFunc);
             ix = 10;
             while (ix > 0) {
-                Log(1, String.format("%1$s getting log record count (PMTK182,2,10) retry %2$d", curFunc, ix));
+                mLog(1, String.format("%1$s getting log record count (PMTK182,2,10) retry %2$d", curFunc, ix));
                 parms = Main.mtkCmd("PMTK182,2,10", "PMTK182,3,10", downDelay);
                 if (parms == null) {
                     ix--;
@@ -196,7 +213,7 @@ public class ClrLogFragment extends Fragment {
                 if (parms[0].contains("PMTK182") && parms[1].contains("3")) {
                     ix = 0;
                     logRecCount = Integer.parseInt(parms[3], 16);
-                    Log(0, String.format("%1$s Log has %2$d records", curFunc, logRecCount));
+                    mLog(0, String.format("%1$s Log has %2$d records", curFunc, logRecCount));
                 }else {
                     ix--;
                     continue;
@@ -206,11 +223,9 @@ public class ClrLogFragment extends Fragment {
         }//doInBackground()
 
         protected void onPostExecute(Void param) {
-            Log(0, "ClrLogFragment.getRecCount.onPostExecute()");
-            if (Main.stopBkGrnd) return;
+            mLog(0, "ClrLogFragment.getRecCount.onPostExecute()");
             if (dialog.isShowing()) dialog.dismiss();
             myHandler.sendEmptyMessage(0);
-            Main.stopBkGrnd = true;
         }//onPostExecute()
     }//class getRecCount
 
@@ -228,32 +243,32 @@ public class ClrLogFragment extends Fragment {
         private Date dstart;
 
         public eraseLog(Context context) {
-            Log(0, "ClrLogFragment.eraseLog.eraseLog()");
+            mLog(0, "ClrLogFragment.eraseLog.eraseLog()");
+            Main.stopBkGrnd = false;
             mContext = context;
         }//eraseLog()
 
         @Override
         protected void onPreExecute() {
-            Log(0, "ClrLogFragment.eraseLog.onPreExecute()");
-            Main.stopBkGrnd = false;
-            downDelay = Integer.parseInt(publicPrefs.getString("downDelay", "50"));
-            dstart = new Date();
-            appendMsg(String.format(getString(R.string.clrBgn), SDF.format(dstart)));
+            mLog(0, "ClrLogFragment.eraseLog.onPreExecute()");
             dialog = new ProgressDialog(mContext);
             this.dialog.setMessage(getString(R.string.working));
             this.dialog.show();
-            Main.stopBkGrnd = false;
+            btnRun.setEnabled(false);
+            downDelay = Integer.parseInt(publicPrefs.getString("downDelay", "50"));
+            dstart = new Date();
+            appendMsg(String.format(getString(R.string.clrBgn), SDF.format(dstart)));
         }//onPreExecute()
 
         @Override
         protected Void doInBackground(Void... params) {
             String curFunc = "ClrLogFragment.eraseLog.doInBackground()";
-            Log(0, curFunc);
+            mLog(0, curFunc);
             //format log using PMTK182,6,1
             parms = Main.mtkCmd("PMTK182,6,1", "PMTK001,182,6", downDelay * 100);
             ix = 10;
             do {
-                Log(1, String.format("%1$s waiting for logger ready (PMTK182,3,1,1) retry %2$d", curFunc, ix));
+                mLog(1, String.format("%1$s waiting for logger ready (PMTK182,3,1,1) retry %2$d", curFunc, ix));
                 ix--;
                 parms = Main.mtkCmd("PMTK182,2,1", "PMTK182,3,1", downDelay * 10);
                 if (parms != null && parms[3].contains("1")) {
@@ -263,19 +278,20 @@ public class ClrLogFragment extends Fragment {
 
             ix = 10;
             do {
-                Log(1, String.format("%1$s getting log record count (PMTK182,2,10) retry %2$d", curFunc, ix));
-                parms = Main.mtkCmd("PMTK182,2,10", "PMTK182,3,10", downDelay * 40);
+                mLog(1, String.format("%1$s getting log record count (PMTK182,2,10) retry %2$d", curFunc, ix));
+                parms = Main.mtkCmd("PMTK182,2,10", "PMTK182,3,10", downDelay * 4);
                 if (parms != null && parms[0].contains("PMTK182") && parms[1].contains("3")) {
                     ix = 0;
                     logRecCount = Integer.parseInt(parms[3], 16);
-                    Main.LogTxt = logRecCount + " log records";
+                    appPrefEditor.putString("strLOGR", String.format(getString(R.string.logrecs), logRecCount));
+                    appPrefEditor.commit();
                     mode = "W";
-                    msg = mContext.getString(R.string.erased);
+                    msg = getString(R.string.erased);
                     publishProgress();
                     goSleep(250);
-                    msg = String.format("GPS has %d records", logRecCount);
+                    msg = String.format(getString(R.string.GPSrecs), logRecCount);
                     publishProgress();
-                    Log(0, String.format("%1$s Log has %2$d records ******", curFunc, logRecCount));
+                    mLog(0, String.format("%1$s Log has %2$d records ******", curFunc, logRecCount));
                 }
                 ix--;
             } while (ix > 0);
@@ -284,19 +300,14 @@ public class ClrLogFragment extends Fragment {
 
         @Override
         protected void onProgressUpdate(String... values) {
-            Log(0, "ClrLogFragment.eraseLog.onProgressUpdate()");
-            if (mode == "L") Log(0, msg);
+            mLog(0, "ClrLogFragment.eraseLog.onProgressUpdate()");
+            if (mode == "L") mLog(0, msg);
             if (mode == "W") appendMsg(msg);
         }
 
         @Override
         protected void onPostExecute(Void param) {
-            Log(0, "ClrLogFragment.eraseLog.onPostExecute()");
-            if (Main.stopBkGrnd) return;
-//            if (aborting) {
-//                appendMsg(Main.errMsg);
-//                Toast.makeText(mContext, Main.errMsg, Toast.LENGTH_LONG).show();
-//            }
+            mLog(0, "ClrLogFragment.eraseLog.onPostExecute()");
             Date dend = new Date();
             long diff = dend.getTime() - dstart.getTime();
             diff = diff / 1000;
@@ -305,9 +316,7 @@ public class ClrLogFragment extends Fragment {
             long hours = minutes / 60;
             appendMsg(String.format(getString(R.string.clrEnd), SDF.format(dend)));
             appendMsg(String.format("Log downlaod time %1$d hours, %2$d minutes, %3$d seconds", hours, minutes, seconds));
-            btnRun.setEnabled(false);
             if (dialog.isShowing()) dialog.dismiss();
-            Main.stopBkGrnd = true;
         }//onPostExecute()
     }//class eraseLog
 
