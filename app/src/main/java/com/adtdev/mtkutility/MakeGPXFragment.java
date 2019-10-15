@@ -128,7 +128,7 @@ public class MakeGPXFragment extends Fragment {
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mLog(0, "MakeGPXFragment.onViewCreated()");
-        debugLVL = Integer.parseInt(publicPrefs.getString("debugPref", "0"));
+        debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
         makeGPX.setEnabled(false);
     }//onViewCreated()
 

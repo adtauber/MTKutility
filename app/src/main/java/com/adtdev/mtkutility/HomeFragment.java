@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -54,11 +55,11 @@ import java.util.Locale;
 
 public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener {
 
-    private String NL = System.getProperty("line.separator");
+    private static String NL = System.getProperty("line.separator");
     SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.CANADA);
     private final int REQUEST_ENABLE_BT = 88;
-    private StringBuilder mText = new StringBuilder();
-    private final int TEXT_MAX_SIZE = 5120;
+    private static StringBuilder mText = new StringBuilder();
+    private static final int TEXT_MAX_SIZE = 5120;
     final byte[] binPMTK253 = new byte[]{(byte) 0x04, 0x24, 0x0E, 0x00, (byte) 0xFD, 0x00, 0x00, 0x00, (byte) 0xC2, 0x01, 0x00, 0x30, 0x0D, 0x0A};
     final String asterisks = "*******************************************";
 
@@ -104,12 +105,12 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
     private Button btnWarm;
     private Button btnHot;
     private Button btnFactory;
-    private ScrollView mSvText;
-    private TextView mTvText;
+    private static ScrollView mSvText;
+    private static TextView mTvText;
     private TextView mEPOinfo;
     private int homeFont;
-    private int cmdRetries;
-    private int cmdDelay;
+    private int cmdRetry;
+    private static int cmdDelay;
 
     private CheckBox cbxInsecure;
     private String msg;
@@ -124,6 +125,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
     private String[] parms;
     private boolean hasAGPS = true;
     private boolean isGPSlogger = true;
+    private String GPSmac;
 
     private File logPath;
     private File logFile;
@@ -135,9 +137,9 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
     private SharedPreferences appPrefs;
     private SharedPreferences.Editor appPrefEditor;
     private Context mContext = Main.mContext;
-    private int debugLVL;
-    private final int ABORT = 9;
-    private OutputStreamWriter logWriter = Main.logWriter;
+    private static int debugLVL;
+    private static final int ABORT = 9;
+    private static OutputStreamWriter logWriter = Main.logWriter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -154,7 +156,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         logPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), basePathName);
         logFile = new File(logPath, logFileName);
 
-        cmdRetries = Integer.parseInt(publicPrefs.getString("cmdRetries", "5"));
+        cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
         cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
 
         mV = inflater.inflate(R.layout.home, container, false);
@@ -185,9 +187,10 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
 
         //show stored GPS device name
         GPSid = mV.findViewById(R.id.txtGPSname);
-        Main.GPSmac = appPrefs.getString("GPSmac", "");
-        if (Main.GPSmac.length() > 0 && !(Main.bluetoothAdapter == null)) {
-            GPSdevice = Main.bluetoothAdapter.getRemoteDevice(Main.GPSmac);
+        GPSmac = appPrefs.getString("GPSmac", "");
+//        if (GPSmac.length() > 0 && !(Main.bluetoothAdapter == null)) {
+        if (!GPSmac.isEmpty()) {
+            GPSdevice = Main.bluetoothAdapter.getRemoteDevice(GPSmac);
             GPSname = GPSdevice.getName();
             GPSid.setText(GPSname);
         }
@@ -215,8 +218,6 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         btnNMEAdflt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Main.stopBkGrnd = true;
-                goSleep(500);
                 mLog(1, String.format("%1$s button %2$s pressed +++++", currFunc, btnNMEAdflt.getText()));
                 new defaultNMEA(mContext).execute();
             }
@@ -234,7 +235,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
                     NMEApaused = false;
                     btnPause.setText(getString(R.string.btnNMEApause));
                 } else {
-                    Main.stopBkGrnd = true;
+                    Main.BkGrndActive = false;
                     NMEApaused = true;
                     btnPause.setText(getString(R.string.btnNMEAresume));
                 }
@@ -280,8 +281,6 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
                         btnConnect();
                     } else {
                         //stop NEMA output ASYNC task - otherwise disconnect will que forever
-                        Main.stopBkGrnd = true;
-                        goSleep(1000);
                         Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                         startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
                     }
@@ -368,7 +367,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mLog(0, "HomeFragment.onViewCreated");
-        debugLVL = Integer.parseInt(publicPrefs.getString("debugPref", "0"));
+        debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
         btnShowHide(false);
     }//onViewCreated()
 
@@ -383,9 +382,11 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
     public void onResume() {
         super.onResume();  // Always call the superclass method first
         mLog(0, "HomeFragment.onResume");
-        Main.stopBkGrnd = true;
-        goSleep(1000);
-        cmdRetries = Integer.parseInt(publicPrefs.getString("cmdRetries", "5"));
+        while (Main.BkGrndActive) {
+            Main.BkGrndActive = false;
+            goSleep(50);
+        }
+        cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
         cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
         recMode = appPrefs.getInt("recMode", 0);
         if (Main.GPSsocket == null) return;
@@ -393,10 +394,10 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             Main.getNMEAsetting();
             setNMEAfields();
             setTextSizes();
-            startNMEA();
-            String agps = appPrefs.getString("strAGPS", "");
-            String logr = appPrefs.getString("strLOGR", "");
-            GPstats.setText(agps + NL + logr);
+//            startNMEA();
+//            String agps = appPrefs.getString("strAGPS", "");
+//            String logr = appPrefs.getString("strLOGR", "");
+//            GPstats.setText(agps + NL + logr);
             NavigationView navigationView = getActivity().findViewById(R.id.nav_view);
             Menu nav_Menu = navigationView.getMenu();
             if (recMode == 1) {
@@ -405,16 +406,15 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             } else if (recMode == 2) nav_Menu.findItem(R.id.nav_GetLog).setVisible(true);
             btnConnect.setText(getString(R.string.connected));
             btnShowHide(true);
+            new getRecCount().execute();
         }
     }//onResume
 
     @Override
     public void onClick(android.support.v4.app.DialogFragment dialog) {
         mLog(0, "HomeFragment.onClick");
-        if (Main.GPSmac == null) {
-            return;
-        }
-        GPSdevice = Main.bluetoothAdapter.getRemoteDevice(Main.GPSmac);
+        if (GPSmac == null) return;
+        GPSdevice = Main.bluetoothAdapter.getRemoteDevice(GPSmac);
         GPSname = GPSdevice.getName();
         GPSid.setText(GPSname);
         msg = GPSname + " " + getString(R.string.selected);
@@ -459,12 +459,8 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         mLog(0, "HomeFragment.btnConnect");
         String str;
         if (!(Main.GPSsocket == null) && Main.GPSsocket.isConnected()) {
-            Main.stopBkGrnd = true;
-            goSleep(1000);
             new disconnect(mContext).execute();
         } else {
-            Main.stopBkGrnd = true;
-            goSleep(1000);
             new connect(mContext).execute();
         }
     }//btnConnect()
@@ -506,7 +502,6 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
     public void doReset(int code, String name) {
         mLog(0, "HomeFragment.doReset");
         //stop NMEA coutput
-        Main.stopBkGrnd = true;
         resetCmd = code;
         resetCMD doreset = new resetCMD(mContext);
         doreset.execute();
@@ -563,7 +558,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         mLog(0, curFunc);
         StringBuilder txtOut = new StringBuilder();
         // check for AGPS
-        int retry = cmdRetries;
+        int retry = cmdRetry;
         while (retry > 0) {
             mLog(2, String.format("%1$s PMTK607 retry %2$d", curFunc, retry));
             retry--;
@@ -599,7 +594,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         int logRecCount = 0;
 
         StringBuilder txtOut = new StringBuilder();
-        int retry = cmdRetries;
+        int retry = cmdRetry;
         while (retry > 0) {
             retry--;
             //PMTK182,2,9 requests the GPS flash id
@@ -614,7 +609,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
                 isGPSlogger = false;
                 mLog(0, String.format("%1$s received: %2$ss", curFunc, concatSarray(parms, 0)));
             } else {
-                retry = cmdRetries;
+                retry = cmdRetry;
                 while (retry > 0) {
                     retry--;
                     //PMTK182,2,10 requests the stored record count
@@ -636,7 +631,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         return txtOut.toString();
     }//isGPSlogger()
 
-    private void mLog(int mode, String msg) {
+    private static void mLog(int mode, String msg) {
         if (!Main.logFileIsOpen) {
             return;
         }
@@ -811,32 +806,34 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
 
     private void startNMEA() {
         mLog(0, "HomeFragment.startNMEA");
-        Main.stopBkGrnd = false;
-        goSleep(500);
+        while (Main.BkGrndActive) {
+            Main.BkGrndActive = false;
+            goSleep(250);
+        }
         showNMEA task = new showNMEA();
         task.execute();
     }//startNMEA()
 
-    class showNMEA extends AsyncTask<Void, String, Void> {
+    static class showNMEA extends AsyncTask<Void, String, Void> {
         boolean loop = true;
 
         protected void onPreExecute() {
             mLog(1, "HomeFragment.showNMEA.onPreExecute");
-            Main.showNMEAstopped = false;
-            //nothing to do here
+            Main.BkGrndActive = true;
+            Main.showNMEAisOff = false;
         }//onPreExecute()
 
         @Override
         protected Void doInBackground(Void... params) {
             mLog(1, "HomeFragment.showNMEA.doInBackground");
             String reply = null;
-
-            while (!Main.stopBkGrnd) {
+            while (Main.BkGrndActive) {
                 reply = Main.readString(cmdDelay);
                 if (reply != null) publishProgress(reply);
-                goSleep(cmdDelay);
+//                goSleep(cmdDelay);
             }
-            Main.showNMEAstopped = true;
+            Main.BkGrndActive = false;
+            Main.showNMEAisOff = true;
             return null;
         }
 
@@ -855,8 +852,8 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
 
         protected void onPostExecute() {
             mLog(1, "HomeFragment.showNMEA.onPostExecute");
-            Main.showNMEAstopped = true;
-            //nothing to do here
+            Main.BkGrndActive = false;
+            Main.showNMEAisOff = true;
         }//onPostExecute()
     }//class showNMEA
 
@@ -866,8 +863,8 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         Menu nav_Menu;
 
         public connect(Context context) {
+            Main.BkGrndActive = true;
             mLog(0, "HomeFragment.connect.connect");
-            Main.stopBkGrnd = false;
             mContext = context;
         }//connect()
 
@@ -876,6 +873,11 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             mLog(1, "HomeFragment.connect.onPreExecute");
             this.dialog.setMessage(getString(R.string.connecting));
             this.dialog.show();
+            while (Main.BkGrndActive){
+                Main.BkGrndActive = false;
+                goSleep(250);
+            }
+            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -906,6 +908,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             mLog(1, "HomeFragment.connect.onPostExecute");
             if (Main.aborting) {
                 Toast.makeText(mContext, Main.errMsg, Toast.LENGTH_LONG).show();
+                Main.BkGrndActive = false;
                 return;
             }
             if (Main.GPSsocket.isConnected()) {
@@ -947,11 +950,13 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
                 mLog(0, "HomeFragment.connect.onPostExecute " + msg);
                 btnShowHide(true);
                 btnGetGPS.setEnabled(false);
+                Main.BkGrndActive = false;
                 startNMEA();
             } else {
                 msg = mContext.getString(R.string.GPSconnectFail);
                 Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
                 mLog(0, "HomeFragment.connect.onPostExecute " + msg);
+                Main.BkGrndActive = false;
             }
             if (dialog.isShowing()) dialog.dismiss();
             mSvMsg.post(new Runnable() {
@@ -965,7 +970,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         private int getRecordingMode() {
             String curFunc = "HomeFragment.connect.recordingModeIsOK";
             mLog(0, curFunc);
-            int ix = cmdRetries;
+            int ix = cmdRetry;
             while (ix > 0) {//query logging method 1=overlap, 2=stop when full
                 parms = Main.mtkCmd("PMTK182,2,6", "PMTK182,3,6", cmdDelay);
                 if (parms == null) {
@@ -989,7 +994,6 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
 
         public defaultNMEA(Context context) {
             mLog(0, "HomeFragment.defaultNMEA.defaultNMEA");
-            Main.stopBkGrnd = false;
             mContext = context;
         }//defaultNMEA()
 
@@ -998,6 +1002,11 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             mLog(1, "HomeFragment.defaultNMEA.onPreExecute");
             this.dialog.setMessage(getString(R.string.working));
             this.dialog.show();
+            while (Main.BkGrndActive){
+                Main.BkGrndActive = false;
+                goSleep(250);
+            }
+            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -1014,6 +1023,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             setNMEAfields();
             startNMEA();
             if (dialog.isShowing()) dialog.dismiss();
+            Main.BkGrndActive = false;
         }//onPostExecute()
     }//class defaultNMEA
 
@@ -1025,7 +1035,6 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
 
         public disconnect(Context context) {
             mLog(0, "HomeFragment.disconnect.disconnect");
-            Main.stopBkGrnd = false;
             mContext = context;
         }//disconnect()
 
@@ -1034,6 +1043,11 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             mLog(1, "HomeFragment.disconnect.onPreExecute");
             this.dialog.setMessage(getString(R.string.disconnecting));
             this.dialog.show();
+            while (Main.BkGrndActive){
+                Main.BkGrndActive = false;
+                goSleep(250);
+            }
+            Main.BkGrndActive = true;
         }
 
         @Override
@@ -1062,6 +1076,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             btnGetGPS.setEnabled(true);
             mTvText.setText("");
             if (dialog.isShowing()) dialog.dismiss();
+            Main.BkGrndActive = false;
         }
     }// class disconnect
 
@@ -1071,7 +1086,6 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
 
         public resetCMD(Context context) {
             mLog(0, "HomeFragment.resetCMD.resetCMD");
-            Main.stopBkGrnd = false;
             mContext = context;
         }//resetCMD()
 
@@ -1080,6 +1094,11 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             mLog(1, "HomeFragment.resetCmd.onPreExecute");
             this.dialog.setMessage(getString(R.string.working));
             this.dialog.show();
+            while (Main.BkGrndActive){
+                Main.BkGrndActive = false;
+                goSleep(250);
+            }
+            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -1117,6 +1136,69 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
             Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
             mLog(0, "" + msg);
             if (dialog.isShowing()) dialog.dismiss();
+            Main.BkGrndActive = false;
         }
     }//class resetCMD
+
+    private class getRecCount extends AsyncTask<Void, Void, Void> {
+        private ProgressDialog dialog;
+        private int dwnDelay;
+        private int cmdRetry;
+        private int retry;
+        private String[] parms;
+        private int logRecCount;
+
+        protected void onPreExecute() {
+            mLog(0, "GetLogFragment.getRecCount.onPreExecute");
+            dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "50"));
+            dialog = new ProgressDialog(mContext);
+            cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
+            this.dialog.setMessage(getString(R.string.getSetngs));
+            this.dialog.show();
+            while (Main.BkGrndActive) {
+                Main.BkGrndActive = false;
+                goSleep(250);
+            }
+            Main.BkGrndActive = true;
+        }//onPreExecute()
+
+        protected Void doInBackground(Void... params) {
+            String curFunc = "GetLogFragment.getRecCount.doInBackground";
+            mLog(0, curFunc);
+            retry = cmdRetry;
+            while (retry > 0) {
+                mLog(2, String.format("%1$s getting log record count (PMTK182,2,10) retry %2$d", curFunc, retry));
+                parms = Main.mtkCmd("PMTK182,2,10", "PMTK182,3,10", dwnDelay);
+                if (parms == null) {
+                    retry--;
+                    continue;
+                }
+                if (parms[0].contains("PMTK182") && parms[1].contains("3")) {
+                    retry = 0;
+                    logRecCount = Integer.parseInt(parms[3], 16);
+                    mLog(0, String.format("%1$s Log has %2$d records", curFunc, logRecCount));
+                } else {
+                    retry--;
+                    continue;
+                }
+            }
+            ;
+            return null;
+        }//doInBackground()
+
+        protected void onPostExecute(Void param) {
+            mLog(0, "GetLogFragment.getRecCount.onPostExecute");
+
+            String agps = appPrefs.getString("strAGPS", "");
+            String logr = String.format(getString(R.string.logrecs), logRecCount);
+            GPstats.setText(agps + NL + logr);
+            appPrefEditor.putInt("logRecCount", logRecCount);
+            appPrefEditor.putString("strLOGR", logr);
+            appPrefEditor.commit();
+            if (dialog.isShowing()) dialog.dismiss();
+//            haveRecCount.sendEmptyMessage(0);
+            Main.BkGrndActive = false;
+            startNMEA();
+        }//onPostExecute()
+    }//class getRecCount
 }

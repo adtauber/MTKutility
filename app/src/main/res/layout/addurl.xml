@@ -21,13 +21,13 @@
         android:layout_height="wrap_content">
 
         <TableRow
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:weightSum="2">
 
             <EditText
                 android:id="@+id/aFTPdesc"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="@string/aFTPdesc"
                 android:minHeight="1dp"
@@ -35,26 +35,34 @@
         </TableRow>
 
         <TableRow
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <EditText
                 android:id="@+id/aFTPip"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:hint="@string/mFTP_IP"
+                android:minHeight="1dp"
+                android:textAppearance="?android:attr/textAppearanceSmall" />
+
+            <EditText
+                android:id="@+id/aFTPpath"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/mFTP_path"
                 android:minHeight="1dp"
                 android:textAppearance="?android:attr/textAppearanceSmall" />
         </TableRow>
 
         <TableRow
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:weightSum="2">
 
             <EditText
                 android:id="@+id/aFTPuser"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="@string/mFTP_userid"
@@ -63,7 +71,7 @@
 
             <EditText
                 android:id="@+id/aFTPpswd"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="@string/mFTP_pswd"

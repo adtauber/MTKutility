@@ -60,15 +60,15 @@ public class SettingsFragment extends Fragment {
     private boolean logFileIsOpen = Main.logFileIsOpen;
     private OutputStreamWriter logWriter = Main.logWriter;
     private String NL = System.getProperty("line.separator");
-    public int setngFontBTNS;
-    public int setngFontHTML;
+    public int btnsFont;
+    public int htmlFont;
     private int activitySelected;
     private String completionMsg;
     private int flashSize;
     private int screenDPI;
     private int screenWidth;
     private int cmdDelay;
-    private int cmdRetries;
+    private int cmdRetry;
     private boolean stopNMEA;
     private boolean stopLOG;
 
@@ -205,12 +205,12 @@ public class SettingsFragment extends Fragment {
         appPrefs = mContext.getSharedPreferences("otherprefs", Context.MODE_PRIVATE);
         appPrefEditor = appPrefs.edit();
 
-        debugLVL = Integer.parseInt(publicPrefs.getString("debugPref", "0"));
-        setngFontBTNS = Integer.parseInt(publicPrefs.getString("setBtns", "12"));
-        setngFontHTML = Integer.parseInt(publicPrefs.getString("setHtml", "15"));
+        debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
+        btnsFont = Integer.parseInt(publicPrefs.getString("btnsFont", "12"));
+        htmlFont = Integer.parseInt(publicPrefs.getString("htmlFont", "15"));
         screenDPI = appPrefs.getInt("screenDPI", 320);
         screenWidth = appPrefs.getInt("screenWidth", 720);
-        cmdRetries = Integer.parseInt(publicPrefs.getString("cmdRetries", "5"));
+        cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
         cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
         stopNMEA = publicPrefs.getBoolean("stopNMEA", true);
         stopLOG = publicPrefs.getBoolean("stopLOG", true);
@@ -329,18 +329,18 @@ public class SettingsFragment extends Fragment {
         String curFunc = "SettingsFragment.setTextSize";
         mLog(1, curFunc);
 
-        wvbtnUTC.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        wvbtnNav.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        wvbtnRec.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        wvbtnMtd.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        wvbtnSat.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        wvbtnDif.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        wvbtnDOP.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        wvbtnFreq.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        wvbtnDflt.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        wvbtnSave.setTextSize(TypedValue.COMPLEX_UNIT_SP, setngFontBTNS);
-        htmFS = Integer.toString(setngFontHTML);
-        htmFSs = Integer.toString(setngFontHTML - 4);
+        wvbtnUTC.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        wvbtnNav.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        wvbtnRec.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        wvbtnMtd.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        wvbtnSat.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        wvbtnDif.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        wvbtnDOP.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        wvbtnFreq.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        wvbtnDflt.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        wvbtnSave.setTextSize(TypedValue.COMPLEX_UNIT_SP, btnsFont);
+        htmFS = Integer.toString(htmlFont);
+        htmFSs = Integer.toString(htmlFont - 4);
     }//setTextSize()
 
     @Override
@@ -355,10 +355,12 @@ public class SettingsFragment extends Fragment {
         super.onResume();
         String curFunc = "SettingsFragment.onResume";
         mLog(1, curFunc);
-        Main.stopBkGrnd = true;
-        goSleep(1000);
-        setngFontBTNS = Integer.parseInt(publicPrefs.getString("setBtns", "12"));
-        setngFontHTML = Integer.parseInt(publicPrefs.getString("setHtml", "15"));
+        while (Main.BkGrndActive) {
+            Main.BkGrndActive = false;
+            goSleep(50);
+        }
+        btnsFont = Integer.parseInt(publicPrefs.getString("btnsFont", "12"));
+        htmlFont = Integer.parseInt(publicPrefs.getString("htmlFont", "15"));
         setTextSize();
         new getSettings(getActivity()).execute();
     }    //onResume()
@@ -423,7 +425,7 @@ public class SettingsFragment extends Fragment {
         String reply;
         mLog(2, curFunc);
         //get recording by time value
-        int retry = cmdRetries;
+        int retry = cmdRetry;
         while (retry > 0) {
             parms = Main.mtkCmd("PMTK182,2,3", "PMTK182,3,3", cmdDelay * bumpTimeOut);
             retry--;
@@ -438,7 +440,7 @@ public class SettingsFragment extends Fragment {
         }
 
         //get recording by distance value
-        retry = cmdRetries;
+        retry = cmdRetry;
         while (retry > 0) {
             parms = Main.mtkCmd("PMTK182,2,4", "PMTK182,3,4", cmdDelay * bumpTimeOut);
             retry--;
@@ -453,7 +455,7 @@ public class SettingsFragment extends Fragment {
         }
 
         //get recording by speed value
-        retry = cmdRetries;
+        retry = cmdRetry;
         while (retry > 0) {
             parms = Main.mtkCmd("PMTK182,2,5", "PMTK182,3,5", cmdDelay * bumpTimeOut);
             retry--;
@@ -469,7 +471,7 @@ public class SettingsFragment extends Fragment {
 
         clearAllSettings();
         //get recording mode - stop/overwrite
-        retry = cmdRetries;
+        retry = cmdRetry;
         while (retry > 0) {
             parms = Main.mtkCmd("PMTK182,2,6", "PMTK182,3,6", cmdDelay * bumpTimeOut);
             retry--;
@@ -501,7 +503,7 @@ public class SettingsFragment extends Fragment {
         }
 
         //get fields logged bitmask and set checkboxes
-        retry = cmdRetries;
+        retry = cmdRetry;
         while (retry > 0) {
             parms = Main.mtkCmd("PMTK182,2,2", "PMTK182,3,2", cmdDelay * bumpTimeOut);
             retry--;
@@ -1803,7 +1805,6 @@ public class SettingsFragment extends Fragment {
             String curFunc = "SettingsFragment.getSettings.getSettings";
             mLog(1, curFunc);
             mContext = context;
-            Main.stopBkGrnd = false;
         }//erasemLog()
 
         @Override
@@ -1813,6 +1814,11 @@ public class SettingsFragment extends Fragment {
 //            btnRun.setEnabled(false);
             this.dialog.setMessage(getString(R.string.getSetngs));
             this.dialog.show();
+            while (Main.BkGrndActive) {
+                Main.BkGrndActive = false;
+                goSleep(50);
+            }
+            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -1854,17 +1860,20 @@ public class SettingsFragment extends Fragment {
             String curFunc = "SettingsFragment.doInBackground.doInBackground";
             mLog(1, curFunc);
             mContext = context;
-            Main.stopBkGrnd = false;
+            Main.BkGrndActive = false;
         }//erasemLog()
 
         @Override
         protected void onPreExecute() {
             String curFunc = "SettingsFragment.doInBackground.onPreExecute";
             mLog(1, curFunc);
-//			readBytesDelay = cmdDelay;
-//            btnRun.setEnabled(false);
             this.dialog.setMessage(getString(R.string.working));
             this.dialog.show();
+            while (Main.BkGrndActive) {
+                Main.BkGrndActive = false;
+                goSleep(250);
+            }
+            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -1893,6 +1902,7 @@ public class SettingsFragment extends Fragment {
             Toast.makeText(mContext, completionMsg, Toast.LENGTH_LONG).show();
             wvbtnSave.setTextColor(Color.BLACK);
             if (dialog.isShowing()) dialog.dismiss();
+            Main.BkGrndActive = false;
         }//onPostExecute()
 
         private void restoreDefaults() {

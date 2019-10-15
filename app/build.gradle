@@ -16,8 +16,8 @@ android {
     defaultConfig {
         applicationId "com.adtdev.mtkutility"
         minSdkVersion 16
-        targetSdkVersion 26
-        versionCode 36
+        targetSdkVersion 28
+        versionCode 37
         versionName "4.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }

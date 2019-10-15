@@ -130,6 +130,7 @@ public class FileChooser extends ListActivity {
 
     private void runFTPsel() {
         ftpURL = intent.getStringExtra("ftpURL").trim();
+        ftpPath = intent.getStringExtra("ftpPath").trim();
         ftpName = intent.getStringExtra("ftpName").trim();
         ftpPswd = intent.getStringExtra("ftpPswd").trim();
         selfolders = false;
@@ -195,7 +196,7 @@ public class FileChooser extends ListActivity {
             } else if (msg.what == 0) {
                 if (dialog.isShowing()) dialog.dismiss();
                 Toast.makeText(context, "connected to " + ftpURL, Toast.LENGTH_SHORT).show();
-                ftpPath = "/";
+//                ftpPath = "/";
                 fillFTP(ftpPath);
             } else if (msg.what == 1) {
                 if (dialog.isShowing()) dialog.dismiss();

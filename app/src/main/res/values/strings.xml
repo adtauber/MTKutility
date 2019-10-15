@@ -152,9 +152,10 @@
     <string name="aFTPid">File type - 60/70/both</string>
     <string name="aFTPdesc">Tag for selection list</string>
     <string name="mFTP_IP">FTP IP or URL</string>
-    <string name="mFTP_port">port #</string>
+    <string name="mFTP_path">path (optional) #</string>
     <string name="mFTP_userid">FTP userid</string>
     <string name="mFTP_pswd">password</string>
+    <string name="mFTP_port">port #</string>
     <string name="mFTP_file">EPO file name</string>
     <string name="mLCL_file">local file name</string>
     <string name="FTPhdr">FTP Download</string>
@@ -171,17 +172,18 @@
 
     <!-- preferences screen -->
     <string name="fonts">Screen Font Preferences</string>
-    <string name="homeFont">Home screen font</string>
-    <string name="setBtns">Settings screen buttons font</string>
-    <string name="setHtml">Settings screen table font</string>
+    <string name="homeFont">home screen font</string>
+    <string name="btnsFont">settings screen buttons font</string>
+    <string name="htmlFont">settings screen table font</string>
     <string name="AGPSsize">AGPS memory size - days</string>
-    <string name="debugPref">Log Trace Level</string>
+    <string name="debugLVL">log trace level</string>
     <string name="cmdDelay">MTK command response delay</string>
-    <string name="cmdRetries">MTK command retries</string>
     <string name="epoDelay">EPO load send/receive delay</string>
-    <string name="disNmeaDown">Disable NMEA when downloading</string>
-    <string name="disLogDown">Disable GPS logging when downloading</string>
-    <string name="downDelay">Download send/receive delay</string>
+    <string name="dwnDelay">download send/receive delay</string>
+    <string name="cmdRetry">MTK command retries</string>
+    <string name="retryInc">command retry delay increment</string>
+    <string name="stopNMEA">disable NMEA responses</string>
+    <string name="stopLOG">disable GPS AUTO LOG</string>
 
     <!-- contentDescription names -->
     <string name="getEPOimage">getEPOimage</string>

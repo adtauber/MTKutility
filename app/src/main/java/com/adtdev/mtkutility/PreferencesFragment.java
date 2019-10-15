@@ -47,7 +47,6 @@ public class PreferencesFragment extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//		mL = Main.mL;
 //		mL.mLog(mL.VB3, "PreferencesFragment.onCreate()");
 
         addPreferencesFromResource(R.xml.privateprefs);

@@ -88,6 +88,7 @@ public class UpdtAGPSFragment extends Fragment {
     private int epoSeq = 0;
     private int epoPackets;
     private int epoDelay;
+    private int retryInc;
     private int maxBytes;
     private int maxPackets;
     private int buflen;
@@ -129,6 +130,7 @@ public class UpdtAGPSFragment extends Fragment {
         cmdRetries = Integer.parseInt(publicPrefs.getString("cmdRetries", "5"));
         cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
         epoDelay = Integer.parseInt(publicPrefs.getString("epoDelay", "150"));
+        retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "0"));
         stopNMEA = publicPrefs.getBoolean("stopNMEA", true);
         stopLOG = publicPrefs.getBoolean("stopLOG", false);
 
@@ -144,7 +146,7 @@ public class UpdtAGPSFragment extends Fragment {
         btnEfile.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mLog(0, "UpdtAGPSFragment - button " + btnEfile.getText() + " pressed");
+                mLog(0, "GetLogFragment - button " + btnEfile.getText() + " pressed");
                 epoName = "";
                 epoPath = "";
                 btnUpdtEPO.setEnabled(false);
@@ -165,7 +167,7 @@ public class UpdtAGPSFragment extends Fragment {
         btnUpdtEPO.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mLog(0, "UpdtAGPSFragment - button " + btnUpdtEPO.getText() + " pressed");
+                mLog(0, "GetLogFragment - button " + btnUpdtEPO.getText() + " pressed");
                 new UpdtAGPSFragment.updateAGPS(getActivity()).execute();
             }
         });
@@ -175,7 +177,7 @@ public class UpdtAGPSFragment extends Fragment {
         btnResetEPO.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mLog(0, "UpdtAGPSFragment - button " + btnResetEPO.getText() + " pressed");
+                mLog(0, "GetLogFragment - button " + btnResetEPO.getText() + " pressed");
                 new UpdtAGPSFragment.resetEPO(getActivity()).execute();
             }
         });
@@ -193,19 +195,15 @@ public class UpdtAGPSFragment extends Fragment {
         scrollDown();
     }//onViewCreated()
 
-    public void onPause() {
-        super.onPause();
-        String curFunc = "GetLogFragment.onPause";
-        mLog(1, curFunc);
-    }    //onPause()
-
     @Override
     public void onResume() {
         super.onResume();
         String curFunc = "GetLogFragment.onResume";
         mLog(1, curFunc);
-        Main.stopBkGrnd = true;
-        goSleep(1000);
+        while (Main.BkGrndActive) {
+            Main.BkGrndActive = false;
+            goSleep(50);
+        }
     }    //onResume()
 
     private void buildPackets() {
@@ -355,9 +353,8 @@ public class UpdtAGPSFragment extends Fragment {
     private void getEPOsetting(int iff) {
         //update AGPS info
         ok = false;
-        int rpt = cmdRetries;
+        int rpt = 5;
         while (rpt > 0) {
-            mLog(2, String.format("UpdtAGPSFragment.getEPOsetting() retry %1$d", rpt));
             parms = Main.mtkCmd("PMTK607", "PMTK707", cmdDelay);
             rpt--;
             if (parms == null) {
@@ -380,6 +377,7 @@ public class UpdtAGPSFragment extends Fragment {
         }
         appPrefEditor.putString("strAGPS", strAGPS);
         appPrefEditor.commit();
+//        Main.AGPSTxt = strAGPS;
     }//getEPOsetting()
 
     public void goSleep(int mSec) {
@@ -390,47 +388,6 @@ public class UpdtAGPSFragment extends Fragment {
             Main.buildCrashReport(e);
         }
     }//goSleep()
-
-    private void getNMEAsetting() {
-        String curFunc = "UpdtAGPSFragment.getNMEAsetting()";
-        mLog(0, curFunc);
-
-        int retry = 10;
-        boolean OK = false;
-        do {
-            if (Main.stopBkGrnd) return;
-            retry--;
-            //get NMEA output setting from GPS
-            parms = Main.mtkCmd("PMTK414", "PMTK514", cmdDelay);
-            if (parms == null) {
-                mLog(1, String.format("%1$s parms == null", curFunc));
-                continue;
-            }
-            if (!parms[0].contains("PMTK514")) {
-                mLog(1, String.format("%1$s received:%2$s", curFunc, parms[0]));
-                continue;
-            }
-            //check settings string to make sure we have at least 1 output
-            OK = false;
-            for (int ix = 1; ix <= 19; ix++) {
-                if (!parms[ix].contains("0")) {
-                    OK = true;
-                }
-            }
-            if (OK) {
-                appPrefEditor.putString("saveMNEA", concatSarray(parms, 0));
-                appPrefEditor.commit();
-                retry = 0;
-            } else {
-                //reset GPS to default output if all 0 in settings
-                mLog(1, String.format("%1$s invalid NMEA stored - resetting", curFunc));
-                Main.mtkCmd("PMTK314,-1", "PMTK001", cmdDelay);
-                goSleep(200);
-//                retry = 10;
-                continue;
-            }
-        } while (retry > 0);
-    }//getNMEAsetting()
 
     private void mLog(int mode, String msg) {
         if (!logFileIsOpen) {
@@ -472,64 +429,6 @@ public class UpdtAGPSFragment extends Fragment {
         }
     }//Log()
 
-    private void NMEAstart() {
-        String curFunc = "UpdtAGPSFragment.NMEAstart()";
-        mLog(0, curFunc);
-        mLog(1, String.format("%1$s retreiving saved preference", curFunc));
-        String cmd = appPrefs.getString("saveMNEA", "PMTK314,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0");
-        String[] sArray = cmd.split(",");
-        boolean OK = false;
-        for (int ix = 1; ix <= 19; ix++) {
-            if (!sArray[ix].contains("0")) {
-                OK = true;
-            }
-        }
-        if (!OK) {
-            //reset NMEA outpu to default
-            Main.mtkCmd("PMTK314,-1", "PMTK001", cmdDelay * 4);
-            getNMEAsetting();
-        }
-    }//NMEAstart()
-
-    private void NMEAstop() {
-        String curFunc = "UpdtAGPSFragment.NMEAstop()";
-        mLog(0, curFunc);
-        int retry = cmdRetries;
-        tryagain:
-        while (retry > 0) {
-            if (Main.stopBkGrnd) return;
-            mLog(2, "**** retry " + retry);
-            parms = Main.mtkCmd("PMTK314,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0", "PMTK001,314", cmdDelay);
-            goSleep(cmdDelay);
-            parms = Main.mtkCmd("PMTK414", "PMTK514", cmdDelay);
-            retry--;
-            if (parms == null) continue;
-            mLog(2, "checking: " + concatSarray(parms, 0));
-            for (int ix = 1; ix <= 19; ix++) {
-                if (parms[ix].contains("1")) continue tryagain;
-            }
-        }
-    }//NMEAstop()
-
-    private void LOGstop() {
-        String curFunc = "UpdtAGPSFragment.LOGstop()";
-        mLog(0, curFunc);
-        int retry = cmdRetries;
-        while (retry > 0) {
-            if (Main.stopBkGrnd) return;
-            parms = Main.mtkCmd("PMTK182,5", "PMTK001,182,5", cmdDelay);
-            retry--;
-            if (parms == null) {
-                continue;
-            }
-            if (parms[0].contains("PMTK001")) {
-                if (parms[1].contains("182") && !parms[3].contains("3")) continue;
-            } else {
-                continue;
-            }
-        }
-    }//NMEAstop()
-
     private void scrollDown() {
         final ScrollView scrollView = getActivity().findViewById(R.id.mSv);
         scrollView.post(new Runnable() {
@@ -546,7 +445,6 @@ public class UpdtAGPSFragment extends Fragment {
         public resetEPO(Context context) {
             mLog(0, "UpdtAGPSFragment.resetEPO.resetEPO()");
             mContext = context;
-            Main.stopBkGrnd = false;
         }//updateAGPS()
 
         @Override
@@ -555,6 +453,11 @@ public class UpdtAGPSFragment extends Fragment {
             dialog = new ProgressDialog(mContext);
             dialog.setMessage(getString(com.adtdev.fileChooser.R.string.working));
             dialog.show();
+            while (Main.BkGrndActive) {
+                Main.BkGrndActive = false;
+                goSleep(250);
+            }
+            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -562,12 +465,12 @@ public class UpdtAGPSFragment extends Fragment {
 //            android.os.Debug.waitForDebugger();
             mLog(0, "UpdtAGPSFragment.resetEPO.doInBackground()");
             //delete the MTK logger EPO data
-            if (stopNMEA) NMEAstop();
-            if (stopLOG) LOGstop();
+            if (stopNMEA) Main.NMEAstop();
+            if (stopLOG) Main.LOGstop();
 
             int retry = cmdRetries;
             while (retry > 0) {
-                Main.mtkCmd("PMTK127", "PMTK001,127", epoDelay * 4);
+                Main.mtkCmd("PMTK127", "PMTK001,127", epoDelay * 2);
                 retry--;
                 if (parms == null) continue;
                 if (parms[0].contains("PMTK001")) {
@@ -577,7 +480,24 @@ public class UpdtAGPSFragment extends Fragment {
                 }
             }
             getEPOsetting(1);
-            if (stopNMEA) NMEAstart();
+
+//            int rpt = cmdRetries;
+//            while (rpt > 0) {
+//                parms = Main.mtkCmd("PMTK127", "PMTK001,127", cmdDelay);
+//                if (parms != null) {
+//                    goSleep(500);
+//                    rpt--;
+//                    continue;
+//                }
+//                if (parms[0].contains("PMTK001") && parms[1].contains("127")) {
+//                    getEPOsetting(1);
+//                }else {
+//                    goSleep(500);
+//                    rpt--;
+//                    continue;
+//                }
+//            }
+            if (stopNMEA) Main.NMEAstart();
             return null;
         }//doInBackground()
 
@@ -590,6 +510,8 @@ public class UpdtAGPSFragment extends Fragment {
             mTv.append(strAGPS + NL);
             scrollDown();
             if (dialog.isShowing()) dialog.dismiss();
+            Main.BkGrndActive = false
+            ;
         }//onPostExecute()
     }//class resetEPO
 
@@ -606,7 +528,6 @@ public class UpdtAGPSFragment extends Fragment {
 
         final int blkSize = 0x0800;
         final int SATstart = 8;
-        private boolean showDiag = false;
         private Context mContext;
         private String msg;
         private int epoRead = 0;
@@ -623,12 +544,13 @@ public class UpdtAGPSFragment extends Fragment {
             mLog(0, "UpdtAGPSFragment.updateAGPS.updateAGPS()");
             mContext = context;
             dialog = new ProgressDialog(mContext);
-            Main.stopBkGrnd = false;
+//            Main.stopBkGrnd = false;
         }//updateAGPS()
 
         @Override
         protected void onPreExecute() {
             mLog(0, "UpdtAGPSFragment.updateAGPS.onPreExecute()");
+//            Main.stopBkGrnd = false;
             initProgress();
             btnEfile.setEnabled(false);
             btnUpdtEPO.setEnabled(false);
@@ -638,14 +560,19 @@ public class UpdtAGPSFragment extends Fragment {
             scrollDown();
             this.dialog.setMessage(getString(R.string.intializing));
             this.dialog.show();
+            while (Main.BkGrndActive) {
+                Main.BkGrndActive = false;
+                goSleep(250);
+            }
+            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
         protected Void doInBackground(Void... params) {
             String curFunc = "UpdtAGPSFragment.updateAGPS.doInBackground()";
             mLog(0, curFunc);
-            if (stopNMEA) NMEAstop();
-            if (stopLOG) LOGstop();
+            if (stopNMEA) Main.NMEAstop();
+            if (stopLOG) Main.LOGstop();
 
             //delete the MTK logger EPO data
             int retry = cmdRetries;
@@ -671,7 +598,7 @@ public class UpdtAGPSFragment extends Fragment {
             abort = false;
             while (BUFix < maxBytes) {
                 mLog(1, String.format("+++ EPO blocks loop **** BUFix=%1$d of %2$d ***", BUFix, maxBytes));
-                if (Main.stopBkGrnd) break;
+                if (!Main.BkGrndActive) break;
 
                 for (int lx = 0; lx < epoType; lx++) {
                     epoCMD[CMDix] = epoBytes[BUFix];
@@ -697,6 +624,7 @@ public class UpdtAGPSFragment extends Fragment {
                     epoSeq++;
                 }
             }
+            if (!Main.BkGrndActive || abort) return null;
 
             //check SETs trnasferred - send last record if less than 3
             if (CMDix < epoBlk) {
@@ -716,19 +644,14 @@ public class UpdtAGPSFragment extends Fragment {
             }
             mLog(1, String.format("+++ EPO blocks loop **** sending end packet ****"));
             Main.sendBytes(epoCMD);
-
-            //show waiting dialog for long running tasks that follow
-            showDiag = true;
-            publishProgress(" ");
-            //give logger time to apply updates
             goSleep(3000);
+
 
             //end biuanary mode
             mLog(0, "***************** switching to normal mode *****************");
             //send the binary command to switch to NMEA mode
             Main.sendBytes(binPMTK253);
             goSleep(1000);
-            if (Main.stopBkGrnd || abort) return null;
             //follow up with the MTK command to wait for switch to NMEA to complete
             retry = cmdRetries;
             while (retry > 0) {
@@ -738,19 +661,23 @@ public class UpdtAGPSFragment extends Fragment {
                 if (parms == null) continue;
                 if (parms[0].contains("PMTK001")) {
                     if (parms[1].contains("253") && !parms[2].contains("3")) continue;
-                } else continue;
+                } else {
+                    continue;
+                }
             }
 
-            if (Main.stopBkGrnd || abort) return null;
+            if (!Main.BkGrndActive || abort) return null;
             //update AGPS info
             getEPOsetting(0);
-            if (stopNMEA) NMEAstart();
+            if (stopNMEA) Main.NMEAstart();
             return null;
         }//doInBackground()
 
         @Override
         protected void onPostExecute(Void param) {
             mLog(0, "UpdtAGPSFragment.updateAGPS.onPostExecute()");
+            if (!Main.BkGrndActive) return;
+            Main.BkGrndActive = false;
             if (abort) {
                 mTv.append(msg + "\n");
                 scrollDown();
@@ -776,17 +703,14 @@ public class UpdtAGPSFragment extends Fragment {
         @Override
         protected void onProgressUpdate(String... values) {
 //            mLog(VB2, "UpdtAGPSFragment.updateAGPS.onProgressUpdate()");
-            if (showDiag) {
+            pct = (BUFix * 100) / maxBytes;
+            if (pct >= 100) {
+                pct = 100;
                 this.dialog.setMessage(getString(R.string.getSetngs));
                 this.dialog.show();
-            } else {
-                pct = (BUFix * 100) / maxBytes;
-                if (pct > 100) {
-                    pct = 100;
-                }
-                mProgress.setProgress(pct);
-                tv1.setText(Integer.toString(epoRead));
             }
+            mProgress.setProgress(pct);
+            tv1.setText(Integer.toString(epoRead));
         }//onProgressUpdate()
 
         private void initProgress() {
@@ -812,8 +736,10 @@ public class UpdtAGPSFragment extends Fragment {
             Main.sendBytes(epoCMD);
             if (doBINdebug) writeHEX(">", epoCMD);
             rereads = 50;
+            int delay = epoDelay;
             while (rereads > 0) {
-                rbuf = readBytes(epoDelay);
+                rbuf = readBytes(delay);
+                delay += retryInc;
                 if (rbuf == null || rbuf.length == 0) {
                     abort = true;
                     msg = "ABORTING - no binary reply received ***";
@@ -893,18 +819,16 @@ public class UpdtAGPSFragment extends Fragment {
 //            timeout = timeout * 10;
             byte[] buf = null;
 
-            do {
+            while (bytes_available == 0 && retry > 0) {
                 mLog(1, String.format("+++ readBytes retry:%1$d  delay:%2$d", retry, timeout));
-                retry--;
                 try {
                     bytes_available = Main.GPSin.available();
                 } catch (IOException e) {
                     Main.buildCrashReport(e);
                 }
-                if (Main.stopBkGrnd) return null;
                 goSleep(timeout);
-            } while (bytes_available == 0 && retry > 0);
-
+                retry--;
+            }
             if (bytes_available > 0) {
                 buf = new byte[bytes_available];
                 try {

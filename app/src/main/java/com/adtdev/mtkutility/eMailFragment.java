@@ -110,7 +110,7 @@ public class eMailFragment extends Fragment {
                 sendEmail(0);
             }
         });
-        debugLVL = Integer.parseInt(publicPrefs.getString("debugPref", "0"));
+        debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
         return rootView;
     }//onCreateView()
 

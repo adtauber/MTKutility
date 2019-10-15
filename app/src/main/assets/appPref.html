@@ -6,6 +6,8 @@
 
 
 
+
+
   
   <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>appPref</title></head><body>
 
@@ -65,7 +67,7 @@ the EPO file.&nbsp; Most loggers will only store 7 days, but there are
 some that handle more.&nbsp; Leave the setting at 7 if you aren't able
 to determine your loggers EPO record capacity.<br>
 
-<br><span style="font-weight: bold; color: rgb(51, 51, 255);">Log Trace Level</span>
+<br><span style="font-weight: bold; color: rgb(51, 51, 255);">log trace level</span>
 sets the detail written to the execution trace file.&nbsp; Leave it a
 <span style="color: rgb(51, 51, 255); font-style: italic; font-weight: bold;">normal</span> to keep the log file at the smallest possible size.&nbsp; I will
 request setting changes when I get involved in problem resolution with
@@ -87,10 +89,15 @@ packet and the read for a response.&nbsp; The default is 150.&nbsp;
 Decreasing this will speed up the AGPS update but it may also result in
 the update hanging.<br>
 <br>
-<span style="font-weight: bold; color: rgb(51, 51, 255);">Download send/receive delay</span>
+<span style="font-weight: bold; color: rgb(51, 51, 255);">download send/receive delay</span>
 sets the wait time, in milliseconds, between the request for data and
 the read for your logger response. The default is 50.&nbsp; The log
 download seems to be very timing sensitive.&nbsp; Please review the <span style="color: rgb(0, 153, 0); font-weight: bold;">Download Log screen</span> help document for problem resolution suggestions.<br>
+<br>
+<span style="font-weight: bold; color: rgb(51, 51, 255);">command retry delay increment</span>&nbsp; this value, in milliseconds, is added to the <span style="font-weight: bold; color: rgb(51, 51, 255);">EPO load send/receive delay</span> and <span style="font-weight: bold; color: rgb(51, 51, 255);">download send/receive delay</span>
+each time the reply response is retried.&nbsp; Use as an alternative to
+changing the delay settings when you experience log download or AGPS
+update hanging failures.<br>
 <br>
 <span style="font-weight: bold; color: rgb(51, 51, 255);">Disable NMEA when downloading</span> when checked, suspends NMEA output (the text you see scrolling on the <span style="color: rgb(0, 153, 0);">Main screen</span>)
 to reduce the amount of traffic from your logger during functions that

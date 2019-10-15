@@ -57,16 +57,26 @@
         <item>5</item>
     </string-array>
 
-    <string-array name="F60">
+    <string-array name="Q60">
         <item>Qstarz 60 byte</item>
         <item>60.248.237.25</item>
+        <item>/</item>
         <item>tsi0001</item>
         <item>tweyet</item>
+    </string-array>
+
+    <string-array name="K60">
+        <item>Kripple 60 byte</item>
+        <item>81.223.20.116</item>
+        <item>/AGPS</item>
+        <item>krippl-gps-master</item>
+        <item>master</item>
     </string-array>
 
     <string-array name="F72">
         <item>GlobalTop 72 byte</item>
         <item>ftp.gtop-tech.com</item>
+        <item>/</item>
         <item>gtopagpsenduser01</item>
         <item>enduser080807</item>
     </string-array>
