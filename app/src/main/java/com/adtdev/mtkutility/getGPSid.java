@@ -51,7 +51,6 @@ public class getGPSid extends DialogFragment {
             Toast.makeText(getActivity(), "no paired devices found", Toast.LENGTH_LONG).show();
         }
         android.app.AlertDialog.Builder builderSingle = new android.app.AlertDialog.Builder(getActivity());
-//        builderSingle.setTitle(getActivity().getString(R.string.selOne));
         builderSingle.setTitle("select GPS device");
         builderSingle.setNegativeButton(getActivity().getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
             @Override
@@ -63,9 +62,7 @@ public class getGPSid extends DialogFragment {
         builderSingle.setAdapter(BTnameArray, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-//                Main.GPSname = BTnameArray.getItem(which);
                 Main.GPSmac = BTmacArray.getItem(which);
-//                mL.appPrefEditor.putString("GPSname", mL.GPSname);
                 appPrefEditor.putString("GPSmac", Main.GPSmac);
                 appPrefEditor.commit();
                 mListener.onClick(getGPSid.this);
@@ -76,7 +73,6 @@ public class getGPSid extends DialogFragment {
 
     GPSdialogListener mListener;
 
-    // onAttach(Context) not called prior to API 23. Use onAttach(Activity) instead
     @TargetApi(23)
     @Override
     public void onAttach(Context context) {

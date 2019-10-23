@@ -65,15 +65,20 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.lang.reflect.Method;
+import java.util.List;
 
 import com.google.gson.Gson;
 
-public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, DrawerLocker {
     //change veriable value to force a rebuild of the app preferences
     public static final String initSTART = "version40";
+    DrawerLayout drawer;
+    ActionBarDrawerToggle toggle;
 
+    private ProgressDialog dialog;
     private static boolean OK;
     private final int REQUEST_WRITE_STORAGE = 0;
     private FragmentManager fragmentManager;
@@ -83,6 +88,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private static String NL = System.getProperty("line.separator");
     public static final int ABORT = 9;
     private final byte[] binPMTK253 = new byte[]{(byte) 0x04, 0x24, 0x0E, 0x00, (byte) 0xFD, 0x00, 0x00, 0x00, (byte) 0xC2, 0x01, 0x00, 0x30, 0x0D, 0x0A};
+    private static final List<Integer> backOK = Arrays.asList(R.id.nav_About,R.id.nav_Help,R.id.nav_Home,R.id.nav_eMail);
 
     private ActionBar actionbar;
     private int activeFragment;
@@ -99,8 +105,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     public static String errMsg;
     public static boolean aborting = false;
     public static boolean firstRun = true;
-    public static boolean BkGrndActive = false;
-    public static boolean showNMEAisOff = true;
+    public static boolean showNMEA = true;
+    public static boolean NMEArunning = false;
     public static OutputStreamWriter logWriter;
     private static StringBuilder readBuf = new StringBuilder();
     private static int rx = 0;
@@ -123,7 +129,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     public static boolean stopLOG = false;
     private static int downBlockSize;
     private int logRecCount;
-    private int calledFrom = 0;
 
     private boolean hasWrite = false;
     public static boolean logFileIsOpen = false;
@@ -181,8 +186,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         actionbar = getSupportActionBar();
 
         // create the navigation drawer
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer = findViewById(R.id.drawer_layout);
+        toggle = new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -199,7 +204,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         hasBluetooth();
         if (!aborting) {
             //is this the first app execute? - execute startup routine
-//            Toast.makeText(mContext, String.format("initial run set %", firstRun), Toast.LENGTH_LONG).show();
             if (firstRun) initialRun();
 
             //check for file write permission - twice
@@ -241,7 +245,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         final int commit = fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).addToBackStack(null).commit();
     }//onCreate()
 
-    //    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         mLog(0, "Main.onCreateOptionsMenu");
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -249,10 +252,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         return true;
     }//onCreateOptionsMenu(Menu menu)
 
-    //    @Override
     public void onBackPressed() {
         mLog(0, "Main.onBackPressed");
-        if (firstRun || activeFragment == R.id.nav_Home) {
+//        if (firstRun || activeFragment == R.id.nav_Home) {
+        if (firstRun || backOK.contains(activeFragment)) {
             if (back_pressed + 2000 > System.currentTimeMillis()) {
                 closeActivities();
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
@@ -267,7 +270,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         back_pressed = System.currentTimeMillis();
     }//onBackPressed()
 
-    //    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         mLog(0, "Main.onOptionsItemSelected");
         Intent prefIntent = new Intent(this, PreferencesActivity.class);
@@ -275,7 +277,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         return true;
     }//onOptionsItemSelected(MenuItem item)
 
-    //    @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         mLog(0, "Main.onNavigationItemSelected");
         // Handle navigation view item clicks here.
@@ -292,13 +293,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             case R.id.nav_GetLog:
                 fragment = new GetLogFragment();
                 itemSelected = R.id.nav_GetLog;
-//                activeFragment = R.id.nav_GetLog;
                 new getRecCount().execute();
                 break;
             case R.id.nav_clrLog:
                 fragment = new ClrLogFragment();
                 itemSelected = R.id.nav_clrLog;
-//                activeFragment = R.id.nav_clrLog;
                 new getRecCount().execute();
                 break;
             case R.id.nav_MakeGPX:
@@ -350,12 +349,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                     Toast.makeText(mContext, getString(R.string.pleaseNav), Toast.LENGTH_LONG).show();
                 }
         }
-        DrawerLayout drawer = findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
         return true;
     }//onNavigationItemSelected(MenuItem item)
 
-    //    @Override
+
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mLog(0, "Main.onRequestPermissionsResult");
@@ -374,7 +371,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 aborting = true;
             }
         }
-    }//onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    }//onRequestPermissionsResult
 
     private void askForEmail() {
         mLog(0, "Main.askForEmail");
@@ -384,7 +381,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         alertDialogBuilder.setMessage(mContext.getString(R.string.crashLog)).setCancelable(false).setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int id) {
-                //Todo
                 sendEmail(1);
             }
         });
@@ -403,13 +399,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         mLog(0, "********** Stack **********");
         mLog(999, str);
         mLog(0, "****** End of Stack ******");
-        //Todo
-//        logClose();
-
         //create restart intent
         Intent intent = new Intent(mContext, Main.class);
         mContext.startActivity(intent);
-
         // make sure we die, otherwise the app will hang ...
         android.os.Process.killProcess(android.os.Process.myPid());
         System.exit(2);
@@ -422,7 +414,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
     private void changeFragment(Fragment fragment) {
         //wait for background task to complete
-//        while (BkGrndActive) goSleep(250);
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        while (NMEArunning) {
+            showNMEA = false;
+            goSleep(50);
+        }
+        mLog(2, String.format("Main.changeFragment NMEArunning=", NMEArunning));
         // set the toolbar title
         if (getSupportActionBar() != null) {
             String title = getResources().getString(R.string.app_name) + " - " + menuItem.toString();
@@ -434,9 +432,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
     private static void closeActivities() {
         mLog(0, "Main.closeActivities");
-        //stop NMEA AsyncTask
-        BkGrndActive = false;
-        goSleep(3000);
+        while (NMEArunning) {
+            showNMEA = false;
+            goSleep(50);
+        }
         // close navigation drawer
         DrawerLayout drawer = mContext.findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -764,6 +763,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         int res = 1 / Int;
     }//testException()
 
+    public void setDrawerEnabled(boolean enabled) {
+        int lockMode = enabled ? DrawerLayout.LOCK_MODE_UNLOCKED :
+                DrawerLayout.LOCK_MODE_LOCKED_CLOSED;
+        drawer.setDrawerLockMode(lockMode);
+        toggle.setDrawerIndicatorEnabled(enabled);
+    }
+
     public class CustomExceptionHandler implements Thread.UncaughtExceptionHandler {
         private Activity mContext;
 
@@ -785,7 +791,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     }//class CustomExceptionHandler
 
     private class getRecCount extends AsyncTask<Void, Void, Void> {
-        private ProgressDialog dialog;
         private int dwnDelay;
         private int cmdRetry;
         private int retry;
@@ -796,13 +801,12 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "50"));
             dialog = new ProgressDialog(mContext);
             cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
-            this.dialog.setMessage(getString(R.string.getSetngs));
-            this.dialog.show();
-            while (BkGrndActive) {
-                BkGrndActive = false;
-                goSleep(250);
+            dialog.setMessage(getString(R.string.getSetngs));
+            dialog.show();
+            while (NMEArunning) {
+                showNMEA = false;
+                goSleep(50);
             }
-            BkGrndActive = true;
         }//onPreExecute()
 
         protected Void doInBackground(Void... params) {
@@ -833,7 +837,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             mLog(0, "GetLogFragment.getRecCount.onPostExecute");
             if (dialog.isShowing()) dialog.dismiss();
             haveRecCount.sendEmptyMessage(0);
-            BkGrndActive = false;
         }//onPostExecute()
     }//class getRecCount
 
@@ -863,6 +866,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                         break;
                 }
             }
+            if (dialog.isShowing()) dialog.dismiss();
         }
     };//Handler myHandler
 
@@ -960,10 +964,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
     protected static String[] mtkCmd(String mtkcmd, String mtkreply, int delay) {
         String[] sArray = new String[99];
-//        for (int i = 0; i <= cmdRetry; i++) {
         int ic = 0;
         while (ic < cmdRetry) {
-            mLog(1, String.format("Main.mtkCmd(%1$s,%2$s) delay %3$d >>>>><<<<<", mtkcmd, mtkreply, delay));
+            mLog(1, String.format("Main.mtkCmd(\"%1$s\",\"%2$s\",%3$d)>>>>><<<<<", mtkcmd, mtkreply, delay));
             if (sendCommand(mtkcmd)) {
                 goSleep(delay);
                 int ix = 0;
@@ -972,7 +975,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                     sArray = waitForReply(mtkreply, delay);
                     if (sArray == null || sArray.length == 0) {
                         delay += retryInc;
-                        mLog(1, String.format("Main.mtkCmd retry %1$d with %2$d delay *****", ix, delay));
+                        mLog(2, String.format("Main.mtkCmd retry %1$d with %2$d delay *****", ix, delay));
                         continue;
                     } else {
                         return sArray;
@@ -1062,7 +1065,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         rx = 0;
         readBuf = new StringBuilder();
         readBuf.append(readString(delay));
-        if (!BkGrndActive) return null;
         StringBuilder sndBuf = new StringBuilder();
         if (readBuf.length() > 0) {
             while (retry > 0) {
@@ -1079,7 +1081,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                     //convert to a string array dropping beginng $ symbol
                     String reply = sndBuf.toString().substring(1);
                     sndBuf = new StringBuilder();
-//                    reply = reply.substring(1);
                     mLog(3, String.format("%1$s received: %2$s", curFunc, reply));
                     sArray = reply.split(",");
                     if (reply.contains(mtkReply)) {
@@ -1094,7 +1095,12 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                         return sArray;
                     }
                     //skip NMEA sentinces
-                    if (sArray[0].contains("GP")) continue;
+                    if (sArray[0].contains("GP")) {
+                        sndBuf = new StringBuilder();
+                        doAppend = false;
+                        continue;
+                    }
+
                 }
                 if (doAppend) {
                     sndBuf.append(b);
@@ -1109,7 +1115,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
                 rx++;
                 if (rx > readBuf.length() - 1) {
-                    if (!BkGrndActive) return null;
                     readBuf = new StringBuilder();
                     readBuf.append(readString(delay));
                     rx = 0;
@@ -1136,7 +1141,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
     protected static String readString(int delay) {
         String curFunc = "Main.readString";
-        if (showNMEAisOff)
+        if (!showNMEA)
             mLog(2, String.format("%1$s(%2$s)<<<<<", curFunc, delay));
         char b = '\0';
         byte[] bytBuf = null;
@@ -1144,7 +1149,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         do {
             bytBuf = readBytes(delay);
             if (bytBuf == null) {
-                if (!BkGrndActive) return null;
                 retry--;
                 continue;
             } else {
@@ -1162,14 +1166,14 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     }//readString()
 
     protected static byte[] readBytes(int delay) {
-        if (showNMEAisOff)
+        if (!showNMEA)
             mLog(3, String.format("Main.readBytes(%1$d)<<<<<", delay));
         int bytes_available = 0;
         int retry = cmdRetry;
         byte[] buf = null;
 
         while (bytes_available == 0) {
-            if (showNMEAisOff)
+            if (!showNMEA)
                 mLog(2, String.format("Main.readBytes retry:%1$d  delay:%2$d", retry, delay));
             retry--;
             if (retry < 1) break;
@@ -1178,11 +1182,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             } catch (IOException e) {
                 buildCrashReport(e);
             }
-            if (!BkGrndActive) return null;
             goSleep(delay * 2);
 
         }
-        if (showNMEAisOff)
+        if (!showNMEA)
             mLog(3, String.format("Main.readBytes done: %1$d bytes available", bytes_available));
         if (bytes_available > 0) {
             buf = new byte[bytes_available];
@@ -1260,7 +1263,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             if (parms[0].contains("PMTK001"))
                 if (parms[1].contains("182") && parms[3].contains("3")) retry = 0;
         } while (retry > 0);
-    }//NMEAstop()
+    }//LOGstop()
 
     public void LOGstart() {
         String curFunc = "Main.LOGstart()";
@@ -1273,7 +1276,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 //            Main.sendCommand("PMTK182,4");
 //            Main.waitForReply("PMTK001,182,4,3");
 //        goSleep(2000);
-    }//NMEAstop()
+    }//LOGstart()
 
     public static void getNMEAsetting() {
         String curFunc = "Main.getNMEAsetting()";
@@ -1284,7 +1287,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         int retry = cmdRetry;
         boolean OK = false;
         while (retry > 0) {
-            if (!BkGrndActive) return;
             retry--;
             //get NMEA output setting from GPS
             parms = mtkCmd("PMTK414", "PMTK514", cmdDelay);

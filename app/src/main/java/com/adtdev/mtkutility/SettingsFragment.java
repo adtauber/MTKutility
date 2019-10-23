@@ -348,22 +348,18 @@ public class SettingsFragment extends Fragment {
         super.onPause();
         String curFunc = "SettingsFragment.onPause";
         mLog(1, curFunc);
-    }    //onPause()
+    }//onPause()
 
     @Override
     public void onResume() {
         super.onResume();
         String curFunc = "SettingsFragment.onResume";
         mLog(1, curFunc);
-        while (Main.BkGrndActive) {
-            Main.BkGrndActive = false;
-            goSleep(50);
-        }
         btnsFont = Integer.parseInt(publicPrefs.getString("btnsFont", "12"));
         htmlFont = Integer.parseInt(publicPrefs.getString("htmlFont", "15"));
         setTextSize();
         new getSettings(getActivity()).execute();
-    }    //onResume()
+    }//onResume()
 
     private void clearAllSettings() {
         String curFunc = "SettingsFragment.clearAllSettings";
@@ -1814,11 +1810,11 @@ public class SettingsFragment extends Fragment {
 //            btnRun.setEnabled(false);
             this.dialog.setMessage(getString(R.string.getSetngs));
             this.dialog.show();
-            while (Main.BkGrndActive) {
-                Main.BkGrndActive = false;
-                goSleep(50);
-            }
-            Main.BkGrndActive = true;
+//            while (Main.BkGrndActive) {
+//                Main.BkGrndActive = false;
+//                goSleep(50);
+//            }
+//            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -1860,7 +1856,7 @@ public class SettingsFragment extends Fragment {
             String curFunc = "SettingsFragment.doInBackground.doInBackground";
             mLog(1, curFunc);
             mContext = context;
-            Main.BkGrndActive = false;
+//            Main.BkGrndActive = false;
         }//erasemLog()
 
         @Override
@@ -1869,11 +1865,11 @@ public class SettingsFragment extends Fragment {
             mLog(1, curFunc);
             this.dialog.setMessage(getString(R.string.working));
             this.dialog.show();
-            while (Main.BkGrndActive) {
-                Main.BkGrndActive = false;
-                goSleep(250);
-            }
-            Main.BkGrndActive = true;
+//            while (Main.BkGrndActive) {
+//                Main.BkGrndActive = false;
+//                goSleep(250);
+//            }
+//            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -1902,7 +1898,7 @@ public class SettingsFragment extends Fragment {
             Toast.makeText(mContext, completionMsg, Toast.LENGTH_LONG).show();
             wvbtnSave.setTextColor(Color.BLACK);
             if (dialog.isShowing()) dialog.dismiss();
-            Main.BkGrndActive = false;
+//            Main.BkGrndActive = false;
         }//onPostExecute()
 
         private void restoreDefaults() {

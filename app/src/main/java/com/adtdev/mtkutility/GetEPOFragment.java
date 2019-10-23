@@ -55,14 +55,9 @@ import com.adtdev.fileChooser.FileChooser;
 import static android.app.Activity.RESULT_OK;
 
 public class GetEPOFragment extends Fragment {
-
-//    private myLibrary mL;
-
     private static final int BYPASS_SELECT = 0;
     private static final int LOCAL_FILE = 1;
     private static final int FTP_FILE = 2;
-    public static final int LOCAL_FILES = 0;
-    public static final int FTP_SELECT = 1;
     public static final int FTP_DOWNLOAD = 2;
     private static final String urlKey = "urlKey";
     private static final int doLOCAL = 0;
@@ -170,7 +165,6 @@ public class GetEPOFragment extends Fragment {
             }
         });
 
-//        private Button btnFTPfile;
         btnFTPfile = rootView.findViewById(R.id.btnFTPfile);
         btnFTPfile.setTransformationMethod(null);
         btnFTPfile.setOnClickListener(new View.OnClickListener() {
@@ -181,7 +175,6 @@ public class GetEPOFragment extends Fragment {
             }
         });
 
-//        private Button btnLCLfile;
         btnLCLfile = rootView.findViewById(R.id.btnLCLfile);
         btnLCLfile.setTransformationMethod(null);
         btnLCLfile.setOnClickListener(new View.OnClickListener() {
@@ -192,7 +185,6 @@ public class GetEPOFragment extends Fragment {
             }
         });
 
-//        private Button btnFTPapnd;
         btnFTPapnd = rootView.findViewById(R.id.btnFTPapnd);
         btnFTPapnd.setTransformationMethod(null);
         btnFTPapnd.setOnClickListener(new View.OnClickListener() {
@@ -203,7 +195,6 @@ public class GetEPOFragment extends Fragment {
             }
         });
 
-//        private Button btnFTPdnld;
         btnFTPdnld = rootView.findViewById(R.id.btnFTPdnld);
         btnFTPdnld.setTransformationMethod(null);
         btnFTPdnld.setOnClickListener(new View.OnClickListener() {
@@ -215,7 +206,6 @@ public class GetEPOFragment extends Fragment {
         });
 
 
-//        private Button btnHTPsave;
         btnHTPsave = rootView.findViewById(R.id.btnHTPsave);
         btnHTPsave.setTransformationMethod(null);
         btnHTPsave.setOnClickListener(new View.OnClickListener() {
@@ -236,7 +226,6 @@ public class GetEPOFragment extends Fragment {
             }
         });
 
-//        private Button btnChkDl;
         btnChkDl = rootView.findViewById(R.id.btnChkDl);
         btnChkDl.setTransformationMethod(null);
         btnChkDl.setOnClickListener(new View.OnClickListener() {
@@ -248,7 +237,6 @@ public class GetEPOFragment extends Fragment {
         });
         btnFTPapnd.setEnabled(false);
         btnFTPdnld.setEnabled(false);
-//        btnHTPdnld.setEnabled(false);
         return rootView;
     }//onCreateView()
 
@@ -263,11 +251,7 @@ public class GetEPOFragment extends Fragment {
         super.onResume();
         String curFunc = "GetEPOFragment.onResume";
         mLog(1, curFunc);
-        while (Main.BkGrndActive) {
-            Main.BkGrndActive = false;
-            goSleep(50);
-        }
-    }    //onResume()
+    }//onResume()
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mLog(0, "GetEPOFragment.onViewCreated()");
@@ -292,22 +276,17 @@ public class GetEPOFragment extends Fragment {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         mLog(0, "GetEPOFragment.onActivityResult()");
         // determine which child activity is calling us back.
-        //               String Name = data.getStringExtra("GetFileName");
-//               String Path = data.getStringExtra("GetPath");
-
         switch (requestCode) {
             case LOCAL_FILE:
                 if (resultCode == RESULT_OK) {
                     localFile = data.getStringExtra("GetPath");
                     LCLfile.setText(localFile);
-//                    LCLfile.setText(data.getStringExtra("GetFileName"));
                     if (!FTPfile.getText().toString().matches("EPO file name"))
                         btnFTPapnd.setEnabled(true);
                 }
                 break;
             case FTP_FILE:
                 if (resultCode == RESULT_OK) {
-//                    FTPfile.setText(data.getStringExtra("GetFileName"));
                     ftpDLfile = data.getStringExtra("GetFileName");
                     FTPfile.setText(data.getStringExtra("GetPath"));
                     ftpDLpath = data.getStringExtra("GetPath");
@@ -409,13 +388,10 @@ public class GetEPOFragment extends Fragment {
         intent.putExtra("ftpName", FTPuser.getText().toString());
         intent.putExtra("ftpPswd", FTPpswd.getText().toString());
         intent.putExtra("ftpPort", "21");
-//        intent.putExtra("srceFN", FTPfile.getText().toString());
         intent.putExtra("srceFN", ftpDLpath);
         intent.putExtra("destFN", localFile);
         intent.putExtra("append", FTPappend);
-//        new FTPdownld(getActivity()).execute();
         startActivityForResult(intent, FTP_DOWNLOAD);
-
     }//doFTPappend()
 
     private void doFTPdownload(){
@@ -447,7 +423,6 @@ public class GetEPOFragment extends Fragment {
         intent.putExtra("ftpName", FTPuser.getText().toString());
         intent.putExtra("ftpPswd", FTPpswd.getText().toString());
         intent.putExtra("ftpPort", "21");
-//        intent.putExtra("srceFN", FTPfile.getText().toString());
         intent.putExtra("srceFN", ftpDLpath);
         intent.putExtra("destFN", epoPath.toString());
         intent.putExtra("append", FTPappend);
@@ -482,7 +457,6 @@ public class GetEPOFragment extends Fragment {
         mLog(0, "GetEPOFragment.doLOCALview()");
         intent = new Intent(getActivity(), FileChooser.class);
         intent.putExtra("method", doLOCAL);
-//        intent.putExtra("root", "/storage");
         intent.putExtra("root", startPath);
         intent.putExtra("start", startPath);
         intent.putExtra("selfolders", false);
@@ -565,8 +539,6 @@ public class GetEPOFragment extends Fragment {
     }//saveHTPpreferences()
 
     private void selectFTPurl() {
-//        ArrayList<urlModel> sitesList = new ArrayList();
-
         final ArrayList<String> selList = new ArrayList<String>();
         Gson gson = new Gson();
         String response = appPrefs.getString(urlKey, "");
@@ -625,11 +597,6 @@ public class GetEPOFragment extends Fragment {
             mLog(0, "GetEPOFragment.FTPdownld.onPreExecute()");
             this.dialog.setMessage(getString(R.string.working));
             this.dialog.show();
-            while (Main.BkGrndActive){
-                Main.BkGrndActive = false;
-                goSleep(250);
-            }
-            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -643,9 +610,7 @@ public class GetEPOFragment extends Fragment {
         protected void onPostExecute(Void param) {
             mLog(0, "GetEPOFragment.FTPdownld.onPostExecute()");
             if (dialog.isShowing()) dialog.dismiss();
-            Main.BkGrndActive = false;
         }//onPostExecute()
-
     }//class FTPdownld
 
     private class HTPdownld extends AsyncTask<Void, String, Void> {
@@ -669,11 +634,6 @@ public class GetEPOFragment extends Fragment {
             mLog(0, "GetEPOFragment.HTPdownld.onPreExecute()");
             this.dialog.setMessage(getString(R.string.working));
             this.dialog.show();
-            while (Main.BkGrndActive){
-                Main.BkGrndActive = false;
-                goSleep(250);
-            }
-            Main.BkGrndActive = true;
         }//onPreExecute()
 
         @Override
@@ -714,12 +674,9 @@ public class GetEPOFragment extends Fragment {
             return null;
         }
 
-        //        @Override
         //String values expected:  Action, Style, message, percent
         protected void onProgressUpdate(String... values) {
             mLog(0, "GetEPOFragment.HTPdownld.onProgressUpdate()");
-//            mTv.append(msg + NL);
-//            mSv.fullScroll(View.FOCUS_DOWN);
         }
 
         @Override
@@ -727,7 +684,6 @@ public class GetEPOFragment extends Fragment {
             mLog(0, "GetEPOFragment.HTPdownld.onPostExecute()");
             if (dialog.isShowing()) dialog.dismiss();
             showToast("HTTP " + getString(R.string.dlDone));
-            Main.BkGrndActive = false;
         }//onPostExecute()
     }//class HTPdownld
 }//class GetEPOFragment

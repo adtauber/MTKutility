@@ -74,7 +74,6 @@ public class ClrLogFragment extends Fragment {
         appPrefEditor = appPrefs.edit();
 
         rootView = inflater.inflate(R.layout.clrlog, container, false);
-//        LogTxt = rootView.findViewById(R.id.LogTxt);
         tv1 = rootView.findViewById(R.id.tv1);
         mSv = rootView.findViewById(R.id.mSv);
         mTv = rootView.findViewById(R.id.mTv);
@@ -109,13 +108,9 @@ public class ClrLogFragment extends Fragment {
         super.onResume();
         String curFunc = "ClrLogFragment.onResume";
         mLog(1, curFunc);
-        while (Main.BkGrndActive) {
-            Main.BkGrndActive = false;
-            goSleep(50);
-        }
         int recs = appPrefs.getInt("logRecCount", 0);
         appendMsg(String.format(getString(R.string.logrecs), recs));
-    }    //onResume()
+    }//onResume()
 
     private void appendMsg(String msg) {
         mTv.append(msg + NL);
@@ -196,11 +191,6 @@ public class ClrLogFragment extends Fragment {
             dialog = new ProgressDialog(mContext);
             this.dialog.setMessage(getString(R.string.getSetngs));
             this.dialog.show();
-            while (Main.BkGrndActive){
-                Main.BkGrndActive = false;
-                goSleep(250);
-            }
-            Main.BkGrndActive = true;
         }//onPreExecute()
 
         protected Void doInBackground(Void... params) {
@@ -230,7 +220,6 @@ public class ClrLogFragment extends Fragment {
             mLog(0, "ClrLogFragment.getRecCount.onPostExecute()");
             if (dialog.isShowing()) dialog.dismiss();
             myHandler.sendEmptyMessage(0);
-            Main.BkGrndActive = false;
         }//onPostExecute()
     }//class getRecCount
 
@@ -255,14 +244,10 @@ public class ClrLogFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             mLog(0, "ClrLogFragment.eraseLog.onPreExecute()");
+            ((DrawerLocker) getActivity()).setDrawerEnabled(false);
             dialog = new ProgressDialog(mContext);
             this.dialog.setMessage(getString(R.string.working));
             this.dialog.show();
-            while (Main.BkGrndActive){
-                Main.BkGrndActive = false;
-                goSleep(250);
-            }
-            Main.BkGrndActive = true;
             btnRun.setEnabled(false);
             dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "50"));
             dstart = new Date();
@@ -326,7 +311,7 @@ public class ClrLogFragment extends Fragment {
             appendMsg(String.format(getString(R.string.clrEnd), SDF.format(dend)));
             appendMsg(String.format("Log downlaod time %1$d hours, %2$d minutes, %3$d seconds", hours, minutes, seconds));
             if (dialog.isShowing()) dialog.dismiss();
-            Main.BkGrndActive = false;
+            ((DrawerLocker) getActivity()).setDrawerEnabled(true);
         }//onPostExecute()
     }//class eraseLog
 
