@@ -48,7 +48,6 @@ public class ClrLogFragment extends Fragment {
     public TextView tv1;
     private ScrollView mSv;
     private TextView mTv;
-    public ProgressBar mProgress;
     private Button btnRun;
     private boolean ok = true;
 
@@ -57,15 +56,13 @@ public class ClrLogFragment extends Fragment {
     private SharedPreferences appPrefs;
     private SharedPreferences.Editor appPrefEditor;
     private Context mContext = Main.mContext;
-    private int debugLVL = 0;
-    private final int ABORT = 9;
-    private OutputStreamWriter logWriter = Main.logWriter;
     private String NL = System.getProperty("line.separator");
-    private boolean logFileIsOpen = Main.logFileIsOpen;
+    private boolean logFileIsOpen;
     private int logRecCount;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        logFileIsOpen = Main.logFileIsOpen;
         mLog(0, "ClrLogFragment.onCreateView()");
 
         publicPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -93,8 +90,8 @@ public class ClrLogFragment extends Fragment {
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mLog(0, "ClrLogFragment.onViewCreated()");
-        debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
     }//onViewCreated()
+
     @Override
 
     public void onPause() {
@@ -136,42 +133,8 @@ public class ClrLogFragment extends Fragment {
     }//goSleep()
 
     private void mLog(int mode, String msg) {
-        if (!logFileIsOpen) {
-            return;
-        }
-        switch (mode) {
-            case 0:
-                if (msg.length() > 127) {
-                    msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
-                }
-                break;
-            case 1:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 2:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 3:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case ABORT:
-                throw new RuntimeException(msg);
-        }
-        String time = DateFormat.getDateTimeInstance().format(new Date());
-        time = time.substring(12);
-        time = time.replace("AM","");
-        time = time.replace("PM","");
-        try {
-            logWriter.append(time + " " + msg + NL);
-            logWriter.flush();
-        } catch (IOException e) {
-            Main.buildCrashReport(e);
+        if (logFileIsOpen) {
+            Main.mLog(mode, msg);
         }
     }//Log()
 
@@ -208,11 +171,12 @@ public class ClrLogFragment extends Fragment {
                     ix = 0;
                     logRecCount = Integer.parseInt(parms[3], 16);
                     mLog(0, String.format("%1$s Log has %2$d records", curFunc, logRecCount));
-                }else {
+                } else {
                     ix--;
                     continue;
                 }
-            };
+            }
+            ;
             return null;
         }//doInBackground()
 
@@ -258,6 +222,8 @@ public class ClrLogFragment extends Fragment {
         protected Void doInBackground(Void... params) {
             String curFunc = "ClrLogFragment.eraseLog.doInBackground()";
             mLog(0, curFunc);
+            //set appFailed at start of doInBackground - clear at end so that process hancing will get reported
+            appPrefEditor.putBoolean("appFailed", true).commit();
             //format log using PMTK182,6,1
             parms = Main.mtkCmd("PMTK182,6,1", "PMTK001,182,6", dwnDelay * 100);
             ix = 10;
@@ -277,8 +243,7 @@ public class ClrLogFragment extends Fragment {
                 if (parms != null && parms[0].contains("PMTK182") && parms[1].contains("3")) {
                     ix = 0;
                     logRecCount = Integer.parseInt(parms[3], 16);
-                    appPrefEditor.putString("strLOGR", String.format(getString(R.string.logrecs), logRecCount));
-                    appPrefEditor.commit();
+                    appPrefEditor.putString("strLOGR", String.format(getString(R.string.logrecs), logRecCount)).commit();
                     mode = "W";
                     msg = getString(R.string.erased);
                     publishProgress();
@@ -289,6 +254,7 @@ public class ClrLogFragment extends Fragment {
                 }
                 ix--;
             } while (ix > 0);
+            appPrefEditor.putBoolean("appFailed", false).commit();
             return null;
         }//doInBackground()
 
@@ -323,7 +289,7 @@ public class ClrLogFragment extends Fragment {
                     if (logRecCount < 1) {
                         appendMsg(getString(R.string.noLogClr));
                         Toast.makeText(mContext, getString(R.string.noLogClr), Toast.LENGTH_LONG).show();
-                    }else {
+                    } else {
                         appendMsg(String.format(getString(R.string.GPSrecs), logRecCount));
                         btnRun.setEnabled(true);
                     }

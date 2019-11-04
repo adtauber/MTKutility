@@ -25,6 +25,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -72,14 +73,14 @@ public class GetLogFragment extends Fragment {
     private int cmdRetry = 0;
     private int retryInc;
     private final int ABORT = 9;
-    private OutputStreamWriter logWriter = Main.logWriter;
     private String NL = System.getProperty("line.separator");
     private String binPathName;
-    private boolean logFileIsOpen = Main.logFileIsOpen;
+    private boolean logFileIsOpen;
     private int logRecCount;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        logFileIsOpen = Main.logFileIsOpen;
         mLog(0, "GetLogFragment.onCreateView");
 
         publicPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -111,8 +112,7 @@ public class GetLogFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mLog(0, "GetLogFragment - button " + btnReset.getText() + " pressed +++++");
-                appPrefEditor.putInt("DLcmd", 0);
-                appPrefEditor.commit();
+                appPrefEditor.putInt("DLcmd", 0).commit();
                 appendMsg(String.format(getString(R.string.logRS), 0));
                 btnReset.setEnabled(false);
             }
@@ -147,8 +147,8 @@ public class GetLogFragment extends Fragment {
         stopNMEA = publicPrefs.getBoolean("stopNMEA", true);
         stopLOG = publicPrefs.getBoolean("stopLOG", false);
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
-        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "50"));
+        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
+        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "150"));
         retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "0"));
         downBlockSize = Integer.parseInt(publicPrefs.getString("downBlockSize", "2048"));
         String curFunc = "GetLogFragment.onResume";
@@ -179,42 +179,8 @@ public class GetLogFragment extends Fragment {
     }//goSleep()
 
     private void mLog(int mode, String msg) {
-        if (!logFileIsOpen) {
-            return;
-        }
-        switch (mode) {
-            case 0:
-                if (msg.length() > 127) {
-                    msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
-                }
-                break;
-            case 1:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 2:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 3:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case ABORT:
-                throw new RuntimeException(msg);
-        }
-        String time = DateFormat.getDateTimeInstance().format(new Date());
-        time = time.substring(12);
-        time = time.replace("AM", "");
-        time = time.replace("PM", "");
-        try {
-            logWriter.append(time + " " + msg + NL);
-            logWriter.flush();
-        } catch (IOException e) {
-            Main.buildCrashReport(e);
+        if (logFileIsOpen) {
+            Main.mLog(mode, msg);
         }
     }//Log()
 
@@ -251,7 +217,7 @@ public class GetLogFragment extends Fragment {
 
         @Override
         protected void onPreExecute() {
-            String curFunc = "GetLogFragment.logDownload.doInBackground()";
+            String curFunc = "GetLogFragment.logDownload.doInBackground";
             mLog(1, curFunc);
             //disable navigation drawer to prevent interrupts
             ((DrawerLocker) getActivity()).setDrawerEnabled(false);
@@ -261,12 +227,16 @@ public class GetLogFragment extends Fragment {
             appendMsg(String.format(getString(R.string.logBgn), SDF.format(dstart)));
             binPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), binPathName);
             offset = appPrefs.getInt("DLcmd", 0);
+            //turn off command retry
+            Main.doRetry = false;
         }//onPreExecute()
 
         @Override
         protected Void doInBackground(Void... params) {
-            String curFunc = "GetLogFragment.logDownload.doInBackground()";
+            String curFunc = "GetLogFragment.logDownload.doInBackground";
             mLog(1, curFunc);
+            //set appFailed at start of doInBackground - clear at end so that process hancing will get reported
+            appPrefEditor.putBoolean("appFailed", true).commit();
             byte[] binBytes = null;
 
             //create temp output
@@ -277,47 +247,41 @@ public class GetLogFragment extends Fragment {
                 return null;
             }
 
-            if (stopNMEA) Main.NMEAstop();
-            if (stopLOG) Main.LOGstop();
-
             bMax = getBytesToRead();
             if (aborting) return null;
-
 
             bRead = offset;
             while (bRead < bMax) {
                 mLog(1, String.format("%1$s offset=%2$d bRead=%3$d bMax=%4$d ", curFunc, offset, bRead, bMax));
                 binBytes = processBLK();
-                if (aborting) {
-                    return null;
-                }
-                mLog(1, String.format("%1$s received %2$d bytes", curFunc, binBytes.length));
+                mLog(3, String.format("%1$s received %2$d bytes", curFunc, binBytes.length));
                 if (binBytes.length > 0) {
                     try {
                         bOut.write(binBytes);
                         mLog(1, String.format("%1$s wrote %2$d bytes to file", curFunc, binBytes.length));
                         offset += binBytes.length;
                         bRead += binBytes.length;
-                        appPrefEditor.putInt("DLcmd", offset);
-                        appPrefEditor.commit();
+                        appPrefEditor.putInt("DLcmd", offset).commit();
                     } catch (IOException e) {
                         Main.buildCrashReport(e);
                         return null;
                     }
                     publishProgress(" ");
                 }
-                goSleep(dwnDelay);
+//                goSleep(dwnDelay);
             }
             BINclose();
-            if (stopNMEA) Main.NMEAstart();
+            appPrefEditor.putBoolean("appFailed", false).commit();
             return null;
         }//doInBackground()
 
         @Override
         protected void onPostExecute(Void param) {
             mLog(0, "GetLogFragment.logDownload.onPostExecute");
-            appPrefEditor.putInt("DLcmd", 0);
-            appPrefEditor.commit();
+            ((DrawerLocker) getActivity()).setDrawerEnabled(true);
+            //turn on command retry again
+            Main.doRetry = true;
+            appPrefEditor.putInt("DLcmd", 0).commit();
             SimpleDateFormat FDF = new SimpleDateFormat("yyyy.MM.dd.HHmmss", Locale.CANADA);
 
             if (binFileIsOpen) {
@@ -347,7 +311,6 @@ public class GetLogFragment extends Fragment {
             long hours = minutes / 60;
             appendMsg(String.format(getString(R.string.logEnd), SDF.format(dend)));
             appendMsg(String.format("Log downlaod time %1$d hours, %2$d minutes, %3$d seconds", hours, minutes, seconds));
-            ((DrawerLocker) getActivity()).setDrawerEnabled(true);
         }//onPostExecute()
 
         //String values expected:  Action, Style, message, percent
@@ -366,7 +329,7 @@ public class GetLogFragment extends Fragment {
         }//onProgressUpdate()
 
         private int getBytesToRead() {
-            String curFunc = "GetLogFragment.logDownload.getBytesToRead()";
+            String curFunc = "GetLogFragment.logDownload.getBytesToRead";
             mLog(1, curFunc);
             // Query the RCD_ADDR (data Log Next Write Address).
             int retry = cmdRetry;
@@ -390,7 +353,7 @@ public class GetLogFragment extends Fragment {
         }//getBytesToRead()
 
         private void initProgress() {
-            String curFunc = "GetLogFragment.logDownload.initProgress()";
+            String curFunc = "GetLogFragment.logDownload.initProgress";
             mLog(1, curFunc);
             mProgress.setProgress(0);   // Main Progress
             mProgress.setMax(100); // Maximum Progress
@@ -400,41 +363,36 @@ public class GetLogFragment extends Fragment {
         }//initProgress()
 
         private byte[] processBLK() {
-            String curFunc = "GetLogFragment.logDownload.processBLK()";
+            String curFunc = "GetLogFragment.logDownload.processBLK";
             mLog(1, curFunc);
             int retry = cmdRetry;
             int delay = dwnDelay;
-            while (retry > 0) {
-                mLog(2, String.format("%1$s command retry %2$d", curFunc, retry));
-                retry--;
-                cmd = String.format("PMTK182,7,%08X,%08X", offset, downBlockSize);
-                parms = Main.mtkCmd(cmd, "PMTK182,8", delay);
-                delay += retryInc;
-                if (parms == null || parms.length < 1) continue;
+            cmd = String.format("PMTK182,7,%08X,%08X", offset, downBlockSize);
+            parms = Main.mtkCmd(cmd, "PMTK182,8", delay);
+            if (parms == null) {
+                mLog(ABORT, String.format(getString(R.string.dlAbort), cmd));
+            } else {
                 if (parms[0].contains("PMTK182")) {
                     int retAddrs = Integer.parseInt(parms[2], 16);
-                    mLog(2, String.format("%1$s offset:%2$d retAddrs:%3$d", curFunc, offset, retAddrs));
+                    mLog(3, String.format("%1$s offset:%2$d retAddrs:%3$d", curFunc, offset, retAddrs));
                     if (retAddrs == offset) {
                         s3len = parms[3].length();
                         // string returned length needs to be twice the blkSize
                         if (s3len % 2 != 0) {
                             mLog(1, String.format("%1$s needed even byte count-received %2$d", curFunc, s3len));
-                            continue;
+                            mLog(ABORT, String.format(getString(R.string.dlAbort), cmd));
                         }
                         if (s3len / 2 != downBlockSize) {
                             mLog(1, String.format("%1$s needed %2$d byte count-received %3$d", curFunc, downBlockSize, s3len));
-                            continue;
+                            mLog(ABORT, String.format(getString(R.string.dlAbort), cmd));
                         }
-                        //valid NMEA string has been found - break out of loop
-                        retry = 0;
-                        mLog(2, String.format("%1$s bin length is %2$d bytes", curFunc, s3len));
+                        mLog(3, String.format("%1$s bin length is %2$d bytes", curFunc, s3len));
                         mLog(3, String.format("%1$s <%2$s>", curFunc, parms[3]));
                     }
-                }
-                if (parms[0].contains("PMTK001") && !parms[parms.length - 1].contains("3")) {
+                } else if (parms[0].contains("PMTK001")) {
                     //PMTK182,7 failed - need to abort
-                    aborting = true;
-                    msg = String.format(getString(R.string.dlAbort), cmd);
+                    mLog(1,String.format("%1$s <%2$s>", curFunc, TextUtils.join(",", parms)));
+                    mLog(ABORT, String.format(getString(R.string.dlAbort), cmd));
                     return null;
                 }
             }
@@ -454,12 +412,12 @@ public class GetLogFragment extends Fragment {
                     return null;
                 }
             }
-            mLog(1, String.format("%1$s return size is %2$d characters", curFunc, binArray.length));
+            mLog(2, String.format("%1$s return size is %2$d characters", curFunc, binArray.length));
             return binArray;
         }//processBLK()
 
         private boolean BINopen() {
-            String curFunc = "GetLogFragment.logDownload.BINopen()";
+            String curFunc = "GetLogFragment.logDownload.BINopen";
             mLog(1, curFunc);
             String binFileName = "temp.bin";
             // make sure mtkutility/bin directory exists - create if it is missing
@@ -491,7 +449,7 @@ public class GetLogFragment extends Fragment {
         }//BINopen()
 
         private void BINclose() {
-            String curFunc = "GetLogFragment.logDownload.BINclose()";
+            String curFunc = "GetLogFragment.logDownload.BINclose";
             mLog(1, curFunc);
             if (binFileIsOpen) {
                 try {

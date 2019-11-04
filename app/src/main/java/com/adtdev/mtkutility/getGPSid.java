@@ -63,8 +63,7 @@ public class getGPSid extends DialogFragment {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Main.GPSmac = BTmacArray.getItem(which);
-                appPrefEditor.putString("GPSmac", Main.GPSmac);
-                appPrefEditor.commit();
+                appPrefEditor.putString("GPSmac", Main.GPSmac).commit();
                 mListener.onClick(getGPSid.this);
             }
         });

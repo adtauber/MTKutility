@@ -74,7 +74,8 @@ import com.google.gson.Gson;
 
 public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, DrawerLocker {
     //change veriable value to force a rebuild of the app preferences
-    public static final String initSTART = "version40";
+    public static final String initSTART = "version430";
+    //    public static final String initSTART = "version00";
     DrawerLayout drawer;
     ActionBarDrawerToggle toggle;
 
@@ -84,11 +85,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private FragmentManager fragmentManager;
     NavigationView navigationView;
     private long back_pressed;
-    private static String msg;
     private static String NL = System.getProperty("line.separator");
     public static final int ABORT = 9;
-    private final byte[] binPMTK253 = new byte[]{(byte) 0x04, 0x24, 0x0E, 0x00, (byte) 0xFD, 0x00, 0x00, 0x00, (byte) 0xC2, 0x01, 0x00, 0x30, 0x0D, 0x0A};
-    private static final List<Integer> backOK = Arrays.asList(R.id.nav_About,R.id.nav_Help,R.id.nav_Home,R.id.nav_eMail);
+    public static final int noTrunc = 999;
+    private static final List<Integer> backOK = Arrays.asList(R.id.nav_About, R.id.nav_Help, R.id.nav_eMail, R.id.nav_GetEPO, R.id.nav_MakeGPX);
 
     private ActionBar actionbar;
     private int activeFragment;
@@ -107,6 +107,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     public static boolean firstRun = true;
     public static boolean showNMEA = true;
     public static boolean NMEArunning = false;
+    public static boolean stopNMEA = false;
     public static OutputStreamWriter logWriter;
     private static StringBuilder readBuf = new StringBuilder();
     private static int rx = 0;
@@ -115,6 +116,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private int screenHeight;
     private int screenDPI;
 
+    public static boolean doRetry = true;
     private static int homeFont;
     private static int btnsFont;
     private static int htmlFont;
@@ -125,9 +127,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private static int dwnDelay;
     private static int cmdRetry;
     private static int retryInc;
-    private static boolean stopNMEA;
-    public static boolean stopLOG = false;
     private static int downBlockSize;
+    private static boolean noGPS = false;
+    private static boolean noLOG = false;
+    private static boolean noNMEA = false;
     private int logRecCount;
 
     private boolean hasWrite = false;
@@ -255,18 +258,21 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     public void onBackPressed() {
         mLog(0, "Main.onBackPressed");
 //        if (firstRun || activeFragment == R.id.nav_Home) {
-        if (firstRun || backOK.contains(activeFragment)) {
+        if (firstRun || activeFragment == R.id.nav_Home) {
             if (back_pressed + 2000 > System.currentTimeMillis()) {
                 closeActivities();
                 setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
 //                finish();
                 this.finishAffinity();
                 super.onBackPressed();
-            } else
-                Toast.makeText(mContext, getString(R.string.back1), Toast.LENGTH_LONG).show();
-        } else {
-            Toast.makeText(mContext, getString(R.string.pleaseNav), Toast.LENGTH_LONG).show();
-        }
+            } else Toast.makeText(mContext, getString(R.string.back1), Toast.LENGTH_LONG).show();
+        } else if (backOK.contains(activeFragment)) {
+            back_pressed = 0;
+            fragment = new HomeFragment();
+            activeFragment = R.id.nav_Home;
+            changeFragment(fragment);
+            return;
+        } else Toast.makeText(mContext, getString(R.string.pleaseNav), Toast.LENGTH_LONG).show();
         back_pressed = System.currentTimeMillis();
     }//onBackPressed()
 
@@ -286,6 +292,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         switch (itemSelected) {
             case R.id.nav_Home:
+                if (activeFragment == R.id.nav_Home && GPSsocket != null) {
+                    if (GPSsocket.isConnected()) {
+                        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+                        drawer.closeDrawer(GravityCompat.START);
+                        return true;
+                    }
+                }
                 fragment = new HomeFragment();
                 activeFragment = R.id.nav_Home;
                 changeFragment(fragment);
@@ -392,10 +405,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     protected static void buildCrashReport(Throwable ex) {
         String str = Log.getStackTraceString(ex);
         mLog(0, "Main.buildCrashReport");
-        appPrefEditor.putBoolean("appFailed", true);
-        appPrefEditor.commit();
-        closeActivities();
-        mLog(0, "Main.buildCrashReport()");
+        appPrefEditor.putBoolean("appFailed", true).commit();
+//        closeActivities();
         mLog(0, "********** Stack **********");
         mLog(999, str);
         mLog(0, "****** End of Stack ******");
@@ -416,11 +427,15 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         //wait for background task to complete
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
+        if (!(GPSsocket == null) && GPSsocket.isConnected() && (activeFragment == R.id.nav_Home))
+            NMEAstart();
         while (NMEArunning) {
+            stopNMEA = true;
             showNMEA = false;
             goSleep(50);
         }
-        mLog(2, String.format("Main.changeFragment NMEArunning=", NMEArunning));
+        mLog(2, String.format("Main.changeFragment NMEArunning=%1$b stopNMEA=%2$b", NMEArunning, stopNMEA));
+        if (stopNMEA) NMEAstop();
         // set the toolbar title
         if (getSupportActionBar() != null) {
             String title = getResources().getString(R.string.app_name) + " - " + menuItem.toString();
@@ -433,6 +448,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private static void closeActivities() {
         mLog(0, "Main.closeActivities");
         while (NMEArunning) {
+            mLog(1, "Main.closeActivities closing NMEArunning");
             showNMEA = false;
             goSleep(50);
         }
@@ -449,36 +465,54 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
     }//closeActivities()
 
+    private static String concatSarray(String[] Sa, int bgn) {
+        mLog(0, "Main.concatSarray");
+        StringBuilder builder = new StringBuilder();
+        int i = 0;
+        for (String s : Sa) {
+            if (i >= bgn) {
+                builder.append(s);
+                if (i < Sa.length - 1) {
+                    builder.append(",");
+                }
+            }
+            i++;
+        }
+        return builder.toString();
+    }//concatSarray()
+
     public static void getSharedPreference() {
         String curFunc = "Main.getSharedPreference";
         mLog(0, curFunc);
         mLog(0, "********** app preferences **********");
-        homeFont = Integer.parseInt(publicPrefs.getString("homeFont", "12"));
+        homeFont = Integer.parseInt(publicPrefs.getString("homeFont", "16"));
         mLog(0, String.format("homeFont = %1$s", homeFont));
-        btnsFont = Integer.parseInt(publicPrefs.getString("btnsFont", "12"));
+        btnsFont = Integer.parseInt(publicPrefs.getString("btnsFont", "16"));
         mLog(0, String.format("btnsFont = %1$s", btnsFont));
-        htmlFont = Integer.parseInt(publicPrefs.getString("htmlFont", "15"));
+        htmlFont = Integer.parseInt(publicPrefs.getString("htmlFont", "16"));
         mLog(0, String.format("htmlFont = %1$s", htmlFont));
         AGPSsize = Integer.parseInt(publicPrefs.getString("AGPSsize", "7"));
         mLog(0, String.format("AGPSsize = %1$s", AGPSsize));
         debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
         mLog(0, String.format("debugLVL = %1$s", debugLVL));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
+        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
         mLog(0, String.format("cmdDelay = %1$s", cmdDelay));
-        epoDelay = Integer.parseInt(publicPrefs.getString("epoDelay", "150"));
+        epoDelay = Integer.parseInt(publicPrefs.getString("epoDelay", "200"));
         mLog(0, String.format("epoDelay = %1$s", epoDelay));
-        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "50"));
+        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "150"));
         mLog(0, String.format("dwnDelay = %1$s", dwnDelay));
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
         mLog(0, String.format("cmdRetry = %1$s", cmdRetry));
-        retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "1"));
+        retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "0"));
         mLog(0, String.format("retryInc = %1$s", retryInc));
-        stopNMEA = publicPrefs.getBoolean("stopNMEA", true);
-        mLog(0, String.format("stopNMEA = %1$s", stopNMEA));
-        stopLOG = publicPrefs.getBoolean("stopLOG", false);
-        mLog(0, String.format("stopLOG = %1$s", stopLOG));
         downBlockSize = Integer.parseInt(publicPrefs.getString("downBlockSize", "2048"));
         mLog(0, String.format("downBlockSize = %1$s", downBlockSize));
+        noGPS = publicPrefs.getBoolean("noGPS", false);
+        mLog(0, String.format("noGPS = %1$b", noGPS));
+        noLOG = publicPrefs.getBoolean("noLOG", false);
+        mLog(0, String.format("noLOG = %1$b", noLOG));
+        noNMEA = publicPrefs.getBoolean("noNMEA", false);
+        mLog(0, String.format("noNMEA = %1$b", noNMEA));
         mLog(0, "*************************************");
     }//getSharedPreference()
 
@@ -514,20 +548,29 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         String curFunc = "Main.initialRun";
         mLog(0, curFunc);
         //get the existing preferences - set defaults when they do not exist
-        homeFont = Integer.parseInt(publicPrefs.getString("homeFont", "12"));
-        btnsFont = Integer.parseInt(publicPrefs.getString("btnsFont", "12"));
-        htmlFont = Integer.parseInt(publicPrefs.getString("htmlFont", "15"));
+
+        homeFont = Integer.parseInt(publicPrefs.getString("homeFont", "16"));
+        btnsFont = Integer.parseInt(publicPrefs.getString("btnsFont", "16"));
+        htmlFont = Integer.parseInt(publicPrefs.getString("htmlFont", "16"));
         AGPSsize = Integer.parseInt(publicPrefs.getString("AGPSsize", "7"));
         debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
-        epoDelay = Integer.parseInt(publicPrefs.getString("epoDelay", "150"));
-        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "50"));
+        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
+        epoDelay = Integer.parseInt(publicPrefs.getString("epoDelay", "200"));
+        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "150"));
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
         retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "0"));
-        stopNMEA = publicPrefs.getBoolean("stopNMEA", true);
-        stopLOG = publicPrefs.getBoolean("stopLOG", false);
         downBlockSize = Integer.parseInt(publicPrefs.getString("downBlockSize", "2048"));
+        noGPS = publicPrefs.getBoolean("noGPS", false);
+        noLOG = publicPrefs.getBoolean("noLOG", false);
+        noNMEA = publicPrefs.getBoolean("noNMEA", false);
         GPSmac = appPrefs.getString("GPSmac", "");
+
+//        if (homeFont == 16) homeFont = 16;
+//        if (btnsFont == 16) btnsFont = 16;
+//        if (htmlFont == 16) htmlFont = 16;
+//        if (cmdDelay == 50) cmdDelay = 50;
+//        if (epoDelay == 200) epoDelay = 200;
+        if (dwnDelay == 150) dwnDelay = 300;
 
         //clear both the app and private preferences
         appPrefs.edit().clear().commit();
@@ -574,9 +617,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         publicPrefEditor.putString("dwnDelay", String.valueOf(dwnDelay));
         publicPrefEditor.putString("cmdRetry", String.valueOf(cmdRetry));
         publicPrefEditor.putString("retryInc", String.valueOf(retryInc));
-        publicPrefEditor.putBoolean("stopNMEA", stopNMEA);
-        publicPrefEditor.putBoolean("stopLOG", stopLOG);
         publicPrefEditor.putString("downBlockSize", String.valueOf(downBlockSize));
+        publicPrefEditor.putBoolean("noGPS", noGPS);
+        publicPrefEditor.putBoolean("noLOG", noLOG);
+        publicPrefEditor.putBoolean("noNMEA", noNMEA);
         publicPrefEditor.commit();
         goSleep(500);
     }//initialRun()
@@ -585,7 +629,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         if (!logFileIsOpen) {
             return;
         }
-        if (mode < 999) {
+        if (mode < noTrunc) {
             if (msg.length() > 127) {
                 msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
             }
@@ -711,8 +755,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 // rename Log file to preserve error Log for email
                 logFile.renameTo(errFile);
                 askForEmail();
-                appPrefEditor.putBoolean("appFailed", false);
-                appPrefEditor.commit();
+                appPrefEditor.putBoolean("appFailed", false).commit();
             }
         }
 
@@ -787,7 +830,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 buildCrashReport(ex);
             }
         }
-
     }//class CustomExceptionHandler
 
     private class getRecCount extends AsyncTask<Void, Void, Void> {
@@ -840,16 +882,15 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }//onPostExecute()
     }//class getRecCount
 
-
     Handler haveRecCount = new Handler() {
         @Override
 //        public void handleMessage(@org.jetbrains.annotations.NotNull Message msg) {
         public void handleMessage(@org.jetbrains.annotations.NotNull Message msg) {
-            String curFunc = "GetLogFragment.myHandler.handleMessage()";
+            String curFunc = "GetLogFragment.myHandler.handleMessage";
             mLog(0, curFunc);
-            appPrefEditor.putInt("logRecCount", logRecCount);
-            appPrefEditor.commit();
+            appPrefEditor.putInt("logRecCount", logRecCount).commit();
             if (logRecCount > 0) {
+                stopNMEA = true;
                 activeFragment = itemSelected;
                 changeFragment(fragment);
             } else {
@@ -936,33 +977,32 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             mLog(2, String.format("%1$s %2$s", currFunc, " GPS already disconnected"));
             return true;
         }
-
-        try {
+        if (GPSout != null) {
             mLog(2, String.format("%1$s %2$s", currFunc, " executing GPSout.flush"));
-            GPSout.flush();
-        } catch (IOException e) {
-            buildCrashReport(e);
-            return false;
+            try {
+                GPSout.flush();
+            } catch (IOException e) {
+                buildCrashReport(e);
+                return false;
+            }
+            GPSout = null;
         }
-        try {
-            mLog(2, String.format("%1$s %2$s", currFunc, " executing GPSout.close"));
-            GPSout.close();
-        } catch (IOException e) {
-            buildCrashReport(e);
-            return false;
-        }
-        try {
-            mLog(2, String.format("%1$s %2$s", currFunc, " executing GPSsocket.close"));
-            GPSsocket.close();
-        } catch (IOException e) {
-            buildCrashReport(e);
-            return false;
+        mLog(2, String.format("%1$s %2$s", currFunc, " executing GPSsocket.close"));
+        if (GPSsocket != null) {
+            try {
+                GPSsocket.close();
+            } catch (IOException e) {
+                buildCrashReport(e);
+                return false;
+            }
+            GPSsocket = null;
         }
         mLog(2, String.format("%1$s %2$s", currFunc, " GPS is disconnected *****"));
         return true;
     }//disconnect()
 
     protected static String[] mtkCmd(String mtkcmd, String mtkreply, int delay) {
+        retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "0"));
         String[] sArray = new String[99];
         int ic = 0;
         while (ic < cmdRetry) {
@@ -973,10 +1013,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 while (ix < cmdRetry) {
                     ix++;
                     sArray = waitForReply(mtkreply, delay);
-                    if (sArray == null || sArray.length == 0) {
-                        delay += retryInc;
+                    delay += retryInc;
+                    if (sArray == null || sArray.length < 1) {
                         mLog(2, String.format("Main.mtkCmd retry %1$d with %2$d delay *****", ix, delay));
-                        continue;
+                        if (doRetry) continue;
+                        else return null;
                     } else {
                         return sArray;
                     }
@@ -1094,13 +1135,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                         mLog(2, String.format("%1$s received: %2$s", curFunc, reply));
                         return sArray;
                     }
-                    //skip NMEA sentinces
-                    if (sArray[0].contains("GP")) {
-                        sndBuf = new StringBuilder();
-                        doAppend = false;
-                        continue;
-                    }
-
                 }
                 if (doAppend) {
                     sndBuf.append(b);
@@ -1112,7 +1146,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                         doAppend = false;
                     }
                 }
-
                 rx++;
                 if (rx > readBuf.length() - 1) {
                     readBuf = new StringBuilder();
@@ -1123,9 +1156,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             }
         }
         mLog(0, String.format("%1$s failed - returning null sArray *****", curFunc));
-        //return empty PMTK001 to signify timeout
-        sArray = null;
-        return sArray;
+        return null;
     }//waitForReply()
 
     protected static void sendBytes(byte[] byteArray) {
@@ -1167,14 +1198,14 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
     protected static byte[] readBytes(int delay) {
         if (!showNMEA)
-            mLog(3, String.format("Main.readBytes(%1$d)<<<<<", delay));
+            mLog(2, String.format("Main.readBytes(%1$d)<<<<<", delay));
         int bytes_available = 0;
         int retry = cmdRetry;
         byte[] buf = null;
 
         while (bytes_available == 0) {
             if (!showNMEA)
-                mLog(2, String.format("Main.readBytes retry:%1$d  delay:%2$d", retry, delay));
+                mLog(3, String.format("Main.readBytes retry:%1$d  delay:%2$d", retry, delay));
             retry--;
             if (retry < 1) break;
             try {
@@ -1182,11 +1213,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             } catch (IOException e) {
                 buildCrashReport(e);
             }
-            goSleep(delay * 2);
+            goSleep(delay);
 
         }
         if (!showNMEA)
-            mLog(3, String.format("Main.readBytes done: %1$d bytes available", bytes_available));
+            mLog(2, String.format("Main.readBytes done: %1$d bytes available", bytes_available));
         if (bytes_available > 0) {
             buf = new byte[bytes_available];
             try {
@@ -1199,90 +1230,64 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     }//readBytes()
 
     public static void NMEAstart() {
-        String curFunc = "Main.NMEAstart()";
+        String curFunc = "Main.NMEAstart";
         mLog(0, curFunc);
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
+        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
         String[] parms;
-        mLog(1, String.format("%1$s retreiving saved preference", curFunc));
-        String cmd = appPrefs.getString("saveMNEA", "PMTK314,0,1,0,1,1,1,0,0,0,0,0,0,0,0,0,0,0,0,0");
-        String[] sArray = cmd.split(",");
-        OK = false;
-        for (int ix = 1; ix <= 19; ix++) {
-            if (!sArray[ix].contains("0")) {
-                OK = true;
-                ix = 20;
-            }
-        }
-        if (!OK) {
-            mLog(1, String.format("%1$s stored preference is good", curFunc));
-            sendCommand(cmd);
-        } else {
-            //reset NMEA outpu to default
-            mtkCmd("PMTK314,-1", "PMTK001", cmdDelay);
-            getNMEAsetting();
-        }
+        int retry = cmdRetry;
+        String str = appPrefs.getString("saveMNEA", "");
+        do {
+            mLog(2, String.format("%1$s sending %2$s retry %3$d", curFunc, str, retry));
+            parms = Main.mtkCmd(str, "PMTK001,314", cmdDelay);
+            retry--;
+            if (!parms[0].contains("PMTK001")) continue;
+            retry = 0;
+        } while (retry > 0);
     }//NMEAstart()
 
     public static void NMEAstop() {
-        String curFunc = "Main.NMEAstop()";
+        String curFunc = "Main.NMEAstop";
         mLog(0, curFunc);
+        stopNMEA = false;
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
+        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
+        noNMEA = publicPrefs.getBoolean("noNMEA", false);
+        String mtkCmd;
+        if (noNMEA) {
+            mtkCmd = "PMTK314,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0";
+        } else {
+            mtkCmd = "PMTK314,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0";
+        }
         String[] parms;
         int retry = cmdRetry;
         tryagain:
         do {
-            mLog(2, String.format("%1$s retry %2$d", curFunc, retry));
-            parms = Main.mtkCmd("PMTK314,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0", "PMTK001,314", cmdDelay);
-            goSleep(cmdDelay);
+            mLog(2, String.format("%1$s PMTK414 retry %2$d", curFunc, retry));
             parms = Main.mtkCmd("PMTK414", "PMTK514", cmdDelay);
             retry--;
-            if (parms == null) continue;
-            for (int ix = 1; ix <= 19; ix++) {
-                if (parms[ix].contains("1")) continue tryagain;
-            }
+            if (!parms[0].contains("PMTK514")) continue;
             retry = 0;
         } while (retry > 0);
+        if (parms[0].contains("PMTK514")) {
+            parms[0] = "PMTK314";
+            String str = concatSarray(parms, 0);
+            appPrefEditor.putString("saveMNEA", str).commit();
+            do {
+                mLog(2, String.format("%1$s PMTK314,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 retry %2$d", curFunc, retry));
+                parms = Main.mtkCmd(mtkCmd, "PMTK001,314", cmdDelay);
+                retry--;
+                if (!parms[0].contains("PMTK001")) continue;
+                retry = 0;
+            } while (retry > 0);
+        }
     }//NMEAstop()
 
-    public static void LOGstop() {
-        String curFunc = "Main.LOGstop()";
-        mLog(0, curFunc);
-        cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
-        String[] parms;
-        int retry = cmdRetry;
-        do {
-            mLog(2, String.format("%1$s retry %2$d", curFunc, retry));
-            parms = mtkCmd("PMTK182,5", "PMTK001,182,5", cmdDelay);
-            retry--;
-            if (parms == null) {
-                continue;
-            }
-            if (parms[0].contains("PMTK001"))
-                if (parms[1].contains("182") && parms[3].contains("3")) retry = 0;
-        } while (retry > 0);
-    }//LOGstop()
-
-    public void LOGstart() {
-        String curFunc = "Main.LOGstart()";
-        mLog(0, curFunc);
-        cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
-        String[] parms;
-        parms = Main.mtkCmd("PMTK182,4", "PMTK001,182,4", cmdDelay);
-
-//            Main.sendCommand("PMTK182,4");
-//            Main.waitForReply("PMTK001,182,4,3");
-//        goSleep(2000);
-    }//LOGstart()
-
     public static void getNMEAsetting() {
-        String curFunc = "Main.getNMEAsetting()";
+        String curFunc = "Main.getNMEAsetting";
         mLog(0, curFunc);
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
+        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
         String[] parms;
         int retry = cmdRetry;
         boolean OK = false;
@@ -1305,8 +1310,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 }
             }
             if (OK) {
-                appPrefEditor.putString("saveMNEA", concatSarray(parms, 0));
-                appPrefEditor.commit();
+                appPrefEditor.putString("saveMNEA", concatSarray(parms, 0)).commit();
                 retry = 0;
             } else {
                 //reset GPS to default output if all 0 in settings
@@ -1316,20 +1320,4 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             }
         }
     }//getNMEAsetting()
-
-    private static String concatSarray(String[] Sa, int bgn) {
-        mLog(0, "GetLogFragment.logDownload.concatSarray");
-        StringBuilder builder = new StringBuilder();
-        int i = 0;
-        for (String s : Sa) {
-            if (i >= bgn) {
-                builder.append(s);
-                if (i < Sa.length - 1) {
-                    builder.append(",");
-                }
-            }
-            i++;
-        }
-        return builder.toString();
-    }//concatSarray()
 }

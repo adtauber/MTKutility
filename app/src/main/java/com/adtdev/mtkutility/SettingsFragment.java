@@ -57,7 +57,7 @@ public class SettingsFragment extends Fragment {
     private final static int SET_DEFAULTS = 2;
     private final int ABORT = 9;
     private boolean OK = true;
-    private boolean logFileIsOpen = Main.logFileIsOpen;
+    private boolean logFileIsOpen;
     private OutputStreamWriter logWriter = Main.logWriter;
     private String NL = System.getProperty("line.separator");
     public int btnsFont;
@@ -69,8 +69,6 @@ public class SettingsFragment extends Fragment {
     private int screenWidth;
     private int cmdDelay;
     private int cmdRetry;
-    private boolean stopNMEA;
-    private boolean stopLOG;
 
     private SharedPreferences publicPrefs;
     private SharedPreferences.Editor publicPrefEditor;
@@ -159,10 +157,6 @@ public class SettingsFragment extends Fragment {
     static int logRecLen = 0;
     static int maxRecords;
     static double maxTime;
-    static int logRecCount;
-    static int intVal;
-    static double dVal;
-    //	static int MTKlogFormat;
     static int logMode;
     static int logModes;
     private String cmd;
@@ -197,6 +191,7 @@ public class SettingsFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        logFileIsOpen = Main.logFileIsOpen;
         String curFunc = "SettingsFragment.onCreateView";
         mLog(1, curFunc);
         // Inflate the layout for this fragment
@@ -211,9 +206,7 @@ public class SettingsFragment extends Fragment {
         screenDPI = appPrefs.getInt("screenDPI", 320);
         screenWidth = appPrefs.getInt("screenWidth", 720);
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
-        stopNMEA = publicPrefs.getBoolean("stopNMEA", true);
-        stopLOG = publicPrefs.getBoolean("stopLOG", true);
+        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
 
         mV = inflater.inflate(R.layout.settings, container, false);
 
@@ -388,33 +381,6 @@ public class SettingsFragment extends Fragment {
         radOvrl = spcFill;
         radStop = spcFill;
     }    //clearAllSettings()
-
-    private String concatSarray(String[] Sa, int bgn) {
-        String curFunc = "SettingsFragment.concatSarray";
-        mLog(3, curFunc);
-        StringBuilder builder = new StringBuilder();
-        int i = 0;
-        for (String s : Sa) {
-            if (i >= bgn) {
-                builder.append(s);
-                if (i < Sa.length - 1) {
-                    builder.append(",");
-                }
-            }
-            i++;
-        }
-        return builder.toString();
-    }//concatSarray()
-
-    private void goSleep(int mSec) {
-        String curFunc = "SettingsFragment.goSleep";
-        mLog(3, curFunc);
-        try {
-            Thread.sleep(mSec);
-        } catch (InterruptedException e) {
-            Main.buildCrashReport(e);
-        }
-    }//goSleep()
 
     private void refreshValues() {
         String curFunc = "SettingsFragment.refreshValues";
@@ -896,44 +862,10 @@ public class SettingsFragment extends Fragment {
     // end of settings methods
 
     private void mLog(int mode, String msg) {
-        if (!logFileIsOpen) {
-            return;
+        if (logFileIsOpen) {
+            Main.mLog(mode, msg);
         }
-        switch (mode) {
-            case 0:
-                if (msg.length() > 127) {
-                    msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
-                }
-                break;
-            case 1:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 2:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 3:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case ABORT:
-                throw new RuntimeException(msg);
-        }
-        String time = DateFormat.getDateTimeInstance().format(new Date());
-        time = time.substring(12);
-        time = time.replace("AM", "");
-        time = time.replace("PM", "");
-        try {
-            logWriter.append(time + " " + msg + NL);
-            logWriter.flush();
-        } catch (IOException e) {
-            Main.buildCrashReport(e);
-        }
-    }//mLog()
+    }//Log()
 
     private void showpopupUTC() {
         String curFunc = "SettingsFragment.showpopupUTC";
@@ -1823,10 +1755,7 @@ public class SettingsFragment extends Fragment {
             mLog(1, curFunc);
             boolean stopNMEA = publicPrefs.getBoolean("stopNMEA", true);
             boolean stopLOG = publicPrefs.getBoolean("stopLOG", false);
-            if (stopNMEA) Main.NMEAstop();
-            if (stopLOG) Main.LOGstop();
             refreshValues();
-            if (stopNMEA) Main.NMEAstart();
             return null;
         }//doInBackground()
 
@@ -1876,7 +1805,6 @@ public class SettingsFragment extends Fragment {
         protected Void doInBackground(Void... params) {
             String curFunc = "SettingsFragment.doInBackground.doInBackground";
             mLog(1, curFunc);
-            if (stopNMEA) Main.NMEAstop();
             switch (activitySelected) {
                 case SAVE_CHANGES:
                     saveChanges();
@@ -1886,7 +1814,6 @@ public class SettingsFragment extends Fragment {
                     break;
 
             }
-            if (stopNMEA) Main.NMEAstart();
             return null;
         }//doInBackground()
 

@@ -8,6 +8,8 @@
 
 
 
+
+
   
   <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>appPref</title></head><body>
 
@@ -43,7 +45,7 @@ changes the size of button text.&nbsp; Use it to expand or shrink the
 buttons so that the button row with <span style="color: rgb(51, 51, 255); font-weight: bold; font-style: italic;">reConnect</span> fits the full width of your
 screen. Refresh the <span style="color: rgb(0, 170, 0); font-weight: bold;">Home</span> screen by reselecting it in the navigation
 menu.&nbsp; <span style="color: red; font-weight: bold;">Make sure your are not connected to your GPS device
-when you change the font</span>.<br>
+when you change the font. MTKutility will hang it you open app preferences while connected to your logger</span>.<br>
 
 <br>
 
@@ -62,66 +64,71 @@ email if you need font size adjustments for any of the other screens.</span><br>
 
 <span style="color: rgb(51, 51, 255); font-weight: bold;">AGPS memory
 size - days</span>
-is used in <span style="color: rgb(0, 153, 0); font-weight: bold;">Update AGPS</span> to restrain the number of records read from
+-- is used in <span style="color: rgb(0, 153, 0); font-weight: bold;">Update AGPS</span> to restrain the number of records read from
 the EPO file.&nbsp; Most loggers will only store 7 days, but there are
 some that handle more.&nbsp; Leave the setting at 7 if you aren't able
 to determine your loggers EPO record capacity.<br>
 
 <br><span style="font-weight: bold; color: rgb(51, 51, 255);">log trace level</span>
-sets the detail written to the execution trace file.&nbsp; Leave it a
+-- sets the detail written to the execution trace file.&nbsp; Leave it a
 <span style="color: rgb(51, 51, 255); font-style: italic; font-weight: bold;">normal</span> to keep the log file at the smallest possible size.&nbsp; I will
 request setting changes when I get involved in problem resolution with
 you.<br>
 <br>
-<span style="font-weight: bold; color: rgb(0, 0, 153);"><span style="color: rgb(51, 51, 255);">MTK command retries</span> </span>sets
+<span style="font-weight: bold; color: rgb(0, 0, 153);"><span style="color: rgb(51, 51, 255);">MTK command retries</span> -- </span>sets
 the the number of repeats tried for some of the more difficult
 interactions.&nbsp; This does not apply to all the commands issued by
 MTKutility.<br>
 <br>
-<span style="font-weight: bold; color: rgb(51, 51, 255);">MTK command response delay</span> sets
+<span style="font-weight: bold; color: rgb(51, 51, 255);">MTK command response delay</span> -- sets
 the wait time, in milliseconds, between the send of an MTK command and
-the read for a response.&nbsp; The default is 25.&nbsp; This setting
+the read for a response.&nbsp; This setting
 has the largest impact on the <span style="color: rgb(0, 153, 0);">Home screen</span> <span style="font-style: italic; color: rgb(51, 51, 255); font-weight: bold;">Connect</span>.&nbsp; Increase it in increments of 10 if you experience problems with connect failing or hanging.<br>
 <br>
-<span style="font-weight: bold; color: rgb(51, 51, 255);">EPO load send/receive delay</span> sets
+<span style="font-weight: bold; color: rgb(51, 51, 255);">EPO load send/receive delay</span> -- sets
 the wait time, in milliseconds, between the send of the EPO binary
-packet and the read for a response.&nbsp; The default is 150.&nbsp;
-Decreasing this will speed up the AGPS update but it may also result in
+packet and the read for a response.&nbsp; Decreasing this will speed up the AGPS update but it may also result in
 the update hanging.<br>
 <br>
-<span style="font-weight: bold; color: rgb(51, 51, 255);">download send/receive delay</span>
+<span style="font-weight: bold; color: rgb(51, 51, 255);">download send/receive delay</span> --
 sets the wait time, in milliseconds, between the request for data and
-the read for your logger response. The default is 50.&nbsp; The log
+the read for your logger response. The log
 download seems to be very timing sensitive.&nbsp; Please review the <span style="color: rgb(0, 153, 0); font-weight: bold;">Download Log screen</span> help document for problem resolution suggestions.<br>
 <br>
-<span style="font-weight: bold; color: rgb(51, 51, 255);">command retry delay increment</span>&nbsp; this value, in milliseconds, is added to the <span style="font-weight: bold; color: rgb(51, 51, 255);">EPO load send/receive delay</span> and <span style="font-weight: bold; color: rgb(51, 51, 255);">download send/receive delay</span>
+<span style="font-weight: bold; color: rgb(51, 51, 255);">command retry delay increment</span> -- this value, in milliseconds, is added to the <span style="font-weight: bold; color: rgb(51, 51, 255);">EPO load send/receive delay</span> and <span style="font-weight: bold; color: rgb(51, 51, 255);">download send/receive delay</span>
 each time the reply response is retried.&nbsp; Use as an alternative to
 changing the delay settings when you experience log download or AGPS
 update hanging failures.<br>
 <br>
-<span style="font-weight: bold; color: rgb(51, 51, 255);">Disable NMEA when downloading</span> when checked, suspends NMEA output (the text you see scrolling on the <span style="color: rgb(0, 153, 0);">Main screen</span>)
-to reduce the amount of traffic from your logger during functions that
-involve steady communication between your phone and GPS.&nbsp; The
-default is to have this set (checked).&nbsp; Unsetting this usually
-results in MTK command failures and is not recommended.&nbsp; However
-it is suggested in download problem mitigation.&nbsp; The effect can be
-offset by increasing the <span style="font-weight: bold; color: rgb(51, 51, 255);">MTK command retries</span>
-and <span style="font-weight: bold; color: rgb(0, 0, 153);"><span style="color: rgb(51, 51, 255);">MTK command response delay</span>.</span><br>
-<br>
-<span style="font-weight: bold; color: rgb(51, 51, 255);">Disable GPS logging when downloading</span>
-when checked, stops the logger AUTO LOG function.&nbsp; Use this if you
-have a logger that only has off/on versus off/Bluetooth on/logging
-on.&nbsp; MTKutility cannot issue the turn AUTO LOG on command as this
-over-rides the manual switch setting on loggers that have the two on
-positions.&nbsp; You need to turn your logger off and on to reset the
-AUTO LOG functionality.<br>
-<br>
 <span style="font-weight: bold; color: rgb(51, 51, 255);">Download Block Size</span>
-sets the size of the packet sent by your MTK logger during the
+-- sets the size of the packet sent by your MTK logger during the
 download. While MTK loggers will handle requests for more than 2048
 bytes, the largest packet that is returned is 2048 bytes.&nbsp; I
 chose to use this as the maximum to simplify app coding logic.&nbsp;
 Try decreasing this if you experience problems with the log download.<br>
 <br>
+
+<span style="font-weight: bold; color: rgb(51, 51, 255);">GPS does not support AGPS -- </span>this setting is there for the GPS loggers without AGPS support that do not behave properly when the test for AGPS is done<span style="font-weight: bold; color: rgb(0, 0, 153);"><span style="color: rgb(51, 51, 255);"></span>.</span><br>
+
+<br>
+
+
+<span style="font-weight: bold; color: rgb(51, 51, 255);">GPS does not support logging -- </span>this
+setting is there for the GPS receivers without logging support that do
+not behave properly when the test for logging is done<span style="font-weight: bold; color: rgb(0, 0, 153);"><span style="color: rgb(51, 51, 255);"></span>.</span><br>
+
+
+<br>
+<span style="font-weight: bold; color: rgb(51, 51, 255);">disable NMEA for download/AGPS update -- </span>the default state for NMEA sentence sending when the <span style="color: rgb(0, 170, 0); font-weight: bold;">Home</span>
+screen is not displayed is one GGA sentence every 5 seconds.&nbsp; This
+change was made to accommodate GPS devices that function erratically
+when NMEA sentence output is turned off.&nbsp; However many loggers
+support NMEA output being turned off and will process the download and
+update faster when there isn't NMEA traffic to the Android
+device.&nbsp; Explore this by turning this setting on and executing an
+AGPS update and a larger (5-10k records) log download.&nbsp; If it
+works, you can try speeding up these by reducing the <span style="font-weight: bold; color: rgb(51, 51, 255);">download send/receive delay</span> and <span style="font-weight: bold; color: rgb(51, 51, 255);">EPO load send/receive delay</span>.&nbsp; I have my <span style="font-weight: bold; color: rgb(51, 51, 255);">download send/receive delay</span> set at 50 and <span style="font-weight: bold; color: rgb(51, 51, 255);">EPO load send/receive delay</span> set at 100.<br>
+
+
 <br>
 </body></html>

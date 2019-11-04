@@ -76,21 +76,26 @@
             android:summary=""
             android:title="@string/retryInc" />
 
-        <CheckBoxPreference
-            android:key="stopNMEA"
-            android:summary=""
-            android:title="@string/stopNMEA" />
-
-        <CheckBoxPreference
-            android:key="stopLOG"
-            android:summary=""
-            android:title="@string/stopLOG" />
-
         <ListPreference
             android:entries="@array/listBlockSizeShow"
             android:entryValues="@array/listBlockSizeReturn"
             android:key="downBlockSize"
             android:title="Download Block Size" />
+
+        <CheckBoxPreference
+            android:key="noGPS"
+            android:summary=""
+            android:title="@string/noGPS" />
+
+        <CheckBoxPreference
+            android:key="noLOG"
+            android:summary=""
+            android:title="@string/noLOG" />
+
+        <CheckBoxPreference
+            android:key="noNMEA"
+            android:summary=""
+            android:title="@string/noNMEA" />
 
     </PreferenceCategory>
 </PreferenceScreen>

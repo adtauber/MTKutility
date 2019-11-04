@@ -59,11 +59,8 @@ public class eMailFragment extends Fragment {
     private SharedPreferences.Editor publicPrefEditor;
     private SharedPreferences appPrefs;
     private SharedPreferences.Editor appPrefEditor;
-    private int debugLVL = 0;
-    private final int ABORT = 9;
-    private boolean logFileIsOpen = Main.logFileIsOpen;
-    private OutputStreamWriter logWriter = Main.logWriter;
-    private String NL = System.getProperty("line.separator");
+    private boolean logFileIsOpen;
+//    private String NL = System.getProperty("line.separator");
     private Context mContext = Main.mContext;
 
     @Override
@@ -73,6 +70,7 @@ public class eMailFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        logFileIsOpen = Main.logFileIsOpen;
         mLog(0, "eMailFragment.onCreateView()");
         publicPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         publicPrefEditor = publicPrefs.edit();
@@ -110,7 +108,6 @@ public class eMailFragment extends Fragment {
                 sendEmail(0);
             }
         });
-        debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
         return rootView;
     }//onCreateView()
 
@@ -140,43 +137,10 @@ public class eMailFragment extends Fragment {
         }
     }//onActivityResult()
 
+
     private void mLog(int mode, String msg) {
-        if (!logFileIsOpen) {
-            return;
-        }
-        switch (mode) {
-            case 0:
-                if (msg.length() > 127) {
-                    msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
-                }
-                break;
-            case 1:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 2:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 3:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case ABORT:
-                throw new RuntimeException(msg);
-        }
-        String time = DateFormat.getDateTimeInstance().format(new Date());
-        time = time.substring(12);
-        time = time.replace("AM","");
-        time = time.replace("PM","");
-        try {
-            logWriter.append(time + " " + msg + NL);
-            logWriter.flush();
-        } catch (IOException e) {
-            Main.buildCrashReport(e);
+        if (logFileIsOpen) {
+            Main.mLog(mode, msg);
         }
     }//Log()
 

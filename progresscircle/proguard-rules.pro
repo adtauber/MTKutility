@@ -1,16 +1,21 @@
-ublic static final int notification_template_icon_low_bg = 0x7f080087;
-        public static final int notification_tile_bg = 0x7f080088;
-        public static final int notify_panel_notification_icon_bg = 0x7f080089;
-    }
-    public static final class id {
-        private id() {}
+# Add project specific ProGuard rules here.
+# You can control the set of applied configuration files using the
+# proguardFiles setting in build.gradle.
+#
+# For more details, see
+#   http://developer.android.com/guide/developing/tools/proguard.html
 
-        public static final int action_container = 0x7f090018;
-        public static final int action_divider = 0x7f09001a;
-        public static final int action_image = 0x7f09001b;
-        public static final int action_text = 0x7f090022;
-        public static final int actions = 0x7f090023;
-        public static final int async = 0x7f090029;
-        public static final int blocking = 0x7f09002d;
-        public static final int chronometer = 0x7f09003e;
-        publi
+# If your project uses WebView with JS, uncomment the following
+# and specify the fully qualified class name to the JavaScript interface
+# class:
+#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
+#   public *;
+#}
+
+# Uncomment this to preserve the line number information for
+# debugging stack traces.
+#-keepattributes SourceFile,LineNumberTable
+
+# If you keep the line number information, uncomment this to
+# hide the original source file name.
+#-renamesourcefileattribute SourceFile

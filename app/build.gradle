@@ -7,9 +7,9 @@ android {
     signingConfigs {
         config {
             keyAlias 'key0'
-            keyPassword 'sheeba99'
-            storeFile file('Z:/Android/keystore/uploadkey.jks')
-            storePassword 'sheeba00'
+            keyPassword 'sheeba00'
+            storeFile file('Y:\\uploadkey.jks')
+            storePassword 'sheeba99'
         }
     }
     compileSdkVersion 28
@@ -17,8 +17,8 @@ android {
         applicationId "com.adtdev.mtkutility"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 38
-        versionName "4.1"
+        versionCode 40
+        versionName "4.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

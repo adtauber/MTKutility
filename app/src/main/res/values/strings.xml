@@ -34,6 +34,7 @@
     <string name="dlAbort">aborting download - %1$s failed</string>
     <string name="dlcAbort">aborting download - data conversion error</string>
     <string name="dlbAbort">aborting download - open %1$s failed</string>
+    <string name="binAbort">aborting - GPS reply timed out</string>
 
     <string name="hs00">Things You Need to Know</string>
     <string name="hs01">app preferences</string>
@@ -66,9 +67,9 @@
     <string name="getSetngs">reading settings... please wait</string>
     <string name="intializing">starting... please wait</string>
     <string name="restored">default settings restored</string>
-    <string name="logBgn">Log downlaod started %1$s</string>
+    <string name="logBgn">Log download started %1$s</string>
     <string name="logRS">Log download will restart at offset %1$d</string>
-    <string name="logEnd">Log downlaod finished %1$s</string>
+    <string name="logEnd">Log download finished %1$s</string>
     <string name="clrBgn">Log erase started %1$s</string>
     <string name="clrEnd">Log erase finished %1$s</string>
     <string name="erased">GPS log has been formatted</string>
@@ -182,8 +183,9 @@
     <string name="dwnDelay">download send/receive delay</string>
     <string name="cmdRetry">MTK command retries</string>
     <string name="retryInc">command retry delay increment</string>
-    <string name="stopNMEA">disable NMEA responses</string>
-    <string name="stopLOG">disable GPS AUTO LOG</string>
+    <string name="noGPS">GPS does not support AGPS</string>
+    <string name="noLOG">GPS does not support logging</string>
+    <string name="noNMEA">disable NMEA for download/AGPS update</string>
 
     <!-- contentDescription names -->
     <string name="getEPOimage">getEPOimage</string>

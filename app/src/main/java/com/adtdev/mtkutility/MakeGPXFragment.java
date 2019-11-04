@@ -58,7 +58,7 @@ public class MakeGPXFragment extends Fragment {
     private static final int doLOCAL = 0;
     private String NL = System.getProperty("line.separator");
 
-    private boolean logFileIsOpen = Main.logFileIsOpen;
+    private boolean logFileIsOpen;
     private SharedPreferences publicPrefs;
     private SharedPreferences.Editor publicPrefEditor;
     private SharedPreferences appPrefs;
@@ -86,6 +86,7 @@ public class MakeGPXFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        logFileIsOpen = Main.logFileIsOpen;
         mLog(0, "MakeGPXFragment.onCreateView()");
         publicPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
         publicPrefEditor = publicPrefs.edit();
@@ -181,42 +182,8 @@ public class MakeGPXFragment extends Fragment {
     }//onActivityResult()
 
     private void mLog(int mode, String msg) {
-        if (!logFileIsOpen) {
-            return;
-        }
-        switch (mode) {
-            case 0:
-                if (msg.length() > 127) {
-                    msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
-                }
-                break;
-            case 1:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 2:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 3:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case ABORT:
-                throw new RuntimeException(msg);
-        }
-        String time = DateFormat.getDateTimeInstance().format(new Date());
-        time = time.substring(12);
-        time = time.replace("AM","");
-        time = time.replace("PM","");
-        try {
-            logWriter.append(time + " " + msg + NL);
-            logWriter.flush();
-        } catch (IOException e) {
-            Main.buildCrashReport(e);
+        if (logFileIsOpen) {
+            Main.mLog(mode, msg);
         }
     }//Log()
 

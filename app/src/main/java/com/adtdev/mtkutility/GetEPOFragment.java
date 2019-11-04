@@ -64,6 +64,7 @@ public class GetEPOFragment extends Fragment {
     private static final int doFTPselect = 1;
     private static final int doFTPdownld = 2;
     private String NL = System.getProperty("line.separator");
+    public final int ABORT = 9;
 
     private TextView FTPurl;
     private TextView FTPpath;
@@ -94,10 +95,7 @@ public class GetEPOFragment extends Fragment {
     private SharedPreferences appPrefs;
     private SharedPreferences.Editor appPrefEditor;
     private Context mContext = Main.mContext;
-    private boolean logFileIsOpen = Main.logFileIsOpen;
-    private int debugLVL = 0;
-    private final int ABORT = 9;
-    private OutputStreamWriter logWriter = Main.logWriter;
+    private boolean logFileIsOpen;
 
     private Intent intent;
     private boolean FTPappend;
@@ -109,6 +107,7 @@ public class GetEPOFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        logFileIsOpen = Main.logFileIsOpen;
         mLog(0, "GetEPOFragment.onCreateView()");
 
         publicPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
@@ -255,7 +254,6 @@ public class GetEPOFragment extends Fragment {
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mLog(0, "GetEPOFragment.onViewCreated()");
-        debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
 //        String FTPipD = "60.248.237.25";
 //        String FTPpathD = "/";
 //        String FTPuserD = "tsi0001";
@@ -336,8 +334,7 @@ public class GetEPOFragment extends Fragment {
                         sitesList.add(new urlModel(ipn, url, pth, usr, psw));
                         gson = new Gson();
                         String json = gson.toJson(sitesList);
-                        appPrefEditor.putString(urlKey, json);
-                        appPrefEditor.commit();
+                        appPrefEditor.putString(urlKey, json).commit();
                     }
                 }).show();
 
@@ -370,8 +367,7 @@ public class GetEPOFragment extends Fragment {
                         sitesList.remove(idx);
                         Gson gson = new Gson();
                         String json = gson.toJson(sitesList);
-                        appPrefEditor.putString(urlKey, json);
-                        appPrefEditor.commit();
+                        appPrefEditor.putString(urlKey, json).commit();
                         dialog.dismiss();
                     }
                 })
@@ -475,44 +471,8 @@ public class GetEPOFragment extends Fragment {
     }//goSleep()
 
     private void mLog(int mode, String msg) {
-        if (!logFileIsOpen) {
-            return;
-        }
-        if (mode < 999) {
-            if (msg.length() > 127) {
-                msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
-            }
-        }
-        switch (mode) {
-            case 0:
-                break;
-            case 1:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 2:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 3:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case ABORT:
-                throw new RuntimeException(msg);
-        }
-        String time = DateFormat.getDateTimeInstance().format(new Date());
-        time = time.substring(12);
-        time = time.replace("AM","");
-        time = time.replace("PM","");
-        try {
-            logWriter.append(time + " " + msg + NL);
-            logWriter.flush();
-        } catch (IOException e) {
-            Main.buildCrashReport(e);
+        if (logFileIsOpen) {
+            Main.mLog(mode, msg);
         }
     }//Log()
 
@@ -533,8 +493,7 @@ public class GetEPOFragment extends Fragment {
 
     private void saveHTPpreferences() {
         mLog(0, "GetEPOFragment.saveHTPpreferences()");
-        appPrefEditor.putString("HTPurl", HTPurl.getText().toString());
-        appPrefEditor.commit();
+        appPrefEditor.putString("HTPurl", HTPurl.getText().toString()).commit();
         Toast.makeText(mContext, getString(R.string.saved), Toast.LENGTH_LONG).show();
     }//saveHTPpreferences()
 
