@@ -275,7 +275,7 @@ public class ClrLogFragment extends Fragment {
             long seconds = diff - (minutes * 60);
             long hours = minutes / 60;
             appendMsg(String.format(getString(R.string.clrEnd), SDF.format(dend)));
-            appendMsg(String.format("Log downlaod time %1$d hours, %2$d minutes, %3$d seconds", hours, minutes, seconds));
+            appendMsg(String.format("Log erase time %1$d hours, %2$d minutes, %3$d seconds", hours, minutes, seconds));
             if (dialog.isShowing()) dialog.dismiss();
             ((DrawerLocker) getActivity()).setDrawerEnabled(true);
         }//onPostExecute()

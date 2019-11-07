@@ -56,6 +56,7 @@
     <string name="noPaired">no paired devices found</string>
     <string name="noGPSselected">GPS logger has not been selected</string>
     <string name="GPSconnectFail">connect to GPS logger failed</string>
+    <string name="DLconnectFail">connect failed - click Download Log to retry</string>
     <string name="noConnect">please connect to your GPS logger</string>
     <string name="connecting">Connecting to your GPS logger</string>
     <string name="disconnecting">disConnecting from your GPS logger</string>

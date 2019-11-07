@@ -18,15 +18,19 @@ import android.app.ActionBar;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -58,25 +62,25 @@ public class GetLogFragment extends Fragment {
     private Button btnRun;
     private Button btnReset;
     private boolean ok = true;
+    private long DLstart;
+    private boolean stopBKGRND = false;
+    SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.CANADA);
 
     private SharedPreferences publicPrefs;
     private SharedPreferences.Editor publicPrefEditor;
     private SharedPreferences appPrefs;
     private SharedPreferences.Editor appPrefEditor;
     private Context mContext = Main.mContext;
-    private int debugLVL = 0;
-    private boolean stopNMEA;
-    private boolean stopLOG;
     private int downBlockSize;
     private int cmdDelay;
     private int dwnDelay;
     private int cmdRetry = 0;
-    private int retryInc;
     private final int ABORT = 9;
     private String NL = System.getProperty("line.separator");
     private String binPathName;
     private boolean logFileIsOpen;
     private int logRecCount;
+    private int DLcount;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -101,7 +105,18 @@ public class GetLogFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mLog(0, "GetLogFragment - button " + btnRun.getText() + " pressed +++++");
-                new logDownload(getActivity()).execute();
+                mTv.setTextColor(Color.BLACK);
+                mTv.setText("");
+                DLcount = appPrefs.getInt("DLcmd", 0);
+                if (DLcount > 0) {
+                    btnReset.setEnabled(true);
+                    appendMsg(String.format(getString(R.string.logRS), DLcount));
+                    new connect(getActivity()).execute();
+                }else {
+                    DLstart = new Date().getTime();
+                    appPrefEditor.putLong("DLstart", DLstart).commit();
+                    new logDownload(getActivity()).execute();
+                }
             }
         });
 
@@ -112,9 +127,11 @@ public class GetLogFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 mLog(0, "GetLogFragment - button " + btnReset.getText() + " pressed +++++");
+                stopBKGRND = true;
                 appPrefEditor.putInt("DLcmd", 0).commit();
                 appendMsg(String.format(getString(R.string.logRS), 0));
                 btnReset.setEnabled(false);
+                btnRun.setEnabled(false);
             }
         });
 
@@ -126,10 +143,11 @@ public class GetLogFragment extends Fragment {
         btnReset.setEnabled(false);
         logRecCount = appPrefs.getInt("logRecCount", 0);
         appendMsg(String.format(getString(R.string.logrecs), logRecCount));
-        int recs = appPrefs.getInt("DLcmd", 0);
-        if (recs > 0) {
+        DLcount = appPrefs.getInt("DLcmd", 0);
+        if (DLcount > 0) {
             btnReset.setEnabled(true);
-            appendMsg(String.format(getString(R.string.logRS), recs));
+            appendMsg(String.format(getString(R.string.logRS), DLcount));
+            new connect(getActivity()).execute();
         }
     }//onViewCreated()
 
@@ -143,13 +161,9 @@ public class GetLogFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
-        stopNMEA = publicPrefs.getBoolean("stopNMEA", true);
-        stopLOG = publicPrefs.getBoolean("stopLOG", false);
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
         cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
         dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "150"));
-        retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "0"));
         downBlockSize = Integer.parseInt(publicPrefs.getString("downBlockSize", "2048"));
         String curFunc = "GetLogFragment.onResume";
         mLog(1, curFunc);
@@ -184,6 +198,77 @@ public class GetLogFragment extends Fragment {
         }
     }//Log()
 
+    public class connect extends AsyncTask<Void, Void, Void> {
+        private ProgressDialog dialog = new ProgressDialog(mContext);
+        NavigationView navigationView;
+        Menu nav_Menu;
+
+        public connect(Context context) {
+            mLog(0, "GetLogFragment.connect.connect");
+            mContext = context;
+        }//connect()
+
+        @Override
+        protected void onPreExecute() {
+            mLog(1, "GetLogFragment.connect.onPreExecute");
+            this.dialog.setMessage(getString(R.string.connecting));
+            this.dialog.show();
+        }//onPreExecute()
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            mLog(1, "GetLogFragment.connect.doInBackground");
+            goSleep(5000);
+            boolean ok = Main.connect();
+            if (!ok) return null;
+            if (Main.GPSsocket.isConnected()) {
+                mLog(0, "GetLogFragment.connect.doInBackground() Connected *****");
+            }
+            return null;
+        }//doInBackground()
+
+        @Override
+        protected void onPostExecute(Void param) {
+            mLog(1, "GetLogFragment.connect.onPostExecute");
+            if (dialog.isShowing()) dialog.dismiss();
+            if (Main.aborting) {
+                Toast.makeText(mContext, Main.errMsg, Toast.LENGTH_LONG).show();
+                return;
+            }
+            if (Main.GPSsocket.isConnected()) {
+                new logDownload(getActivity()).execute();
+            }else{
+                Toast.makeText(mContext, getText(R.string.DLconnectFail), Toast.LENGTH_LONG).show();
+                mTv.setTextColor(Color.RED);
+//                appendMsg(NL + getString(R.string.DLconnectFail));
+                mTv.setText(NL + getString(R.string.DLconnectFail));
+//                scrollDown();
+            }
+        }//onPostExecute()
+    }//class connect
+
+    public class disconnect extends AsyncTask<Void, Void, Void> {
+        NavigationView navigationView;
+        Menu nav_Menu;
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            mLog(1, "GetLogFragment.disconnect.doInBackground");
+            Main.disconnect();
+            return null;
+        }
+
+        protected void onPostExecute(Void param) {
+            mLog(1, "GetLogFragment.disconnect.onPostExecute");
+            navigationView = getActivity().findViewById(R.id.nav_view);
+            nav_Menu = navigationView.getMenu();
+            nav_Menu.findItem(R.id.nav_GetLog).setVisible(false);
+            nav_Menu.findItem(R.id.nav_clrLog).setVisible(false);
+            nav_Menu.findItem(R.id.nav_UpdtAGPS).setVisible(false);
+            nav_Menu.findItem(R.id.nav_Settings).setVisible(false);
+        }
+    }// class disconnect
+
     private class logDownload extends AsyncTask<Void, String, Void> {
 
         ProgressBar mProgress = getActivity().findViewById(R.id.circularProgressbar);
@@ -194,13 +279,12 @@ public class GetLogFragment extends Fragment {
         private boolean OK = true;
         private boolean firstProg = true;
         private int offset = 0;
+        private boolean reSumed = false;
         private String cmd;
         private int s3len;
         private int pct;
         private int bRead = 0;
-        private Date dstart;
-        private Date dend;
-        SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.CANADA);
+        private long dend;
         private File binPath;
         private File binFile;
 
@@ -223,10 +307,11 @@ public class GetLogFragment extends Fragment {
             ((DrawerLocker) getActivity()).setDrawerEnabled(false);
             initProgress();
             btnRun.setEnabled(false);
-            dstart = new Date();
-            appendMsg(String.format(getString(R.string.logBgn), SDF.format(dstart)));
+            DLstart = appPrefs.getLong("DLstart", 0);
+            appendMsg(String.format(getString(R.string.logBgn), SDF.format(DLstart)));
             binPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), binPathName);
             offset = appPrefs.getInt("DLcmd", 0);
+            if (offset > 0) reSumed = true;
             //turn off command retry
             Main.doRetry = false;
         }//onPreExecute()
@@ -269,6 +354,7 @@ public class GetLogFragment extends Fragment {
                     publishProgress(" ");
                 }
 //                goSleep(dwnDelay);
+                if (stopBKGRND) return null;
             }
             BINclose();
             appPrefEditor.putBoolean("appFailed", false).commit();
@@ -303,14 +389,18 @@ public class GetLogFragment extends Fragment {
             // rename binary file to today's date and time
             binFile.renameTo(nn);
             appendMsg(getText(R.string.created) + nn.toString());
-            dend = new Date();
-            long diff = dend.getTime() - dstart.getTime();
+            DLstart = appPrefs.getLong("DLstart", 0);
+            dend = new Date().getTime();
+            long diff = dend - DLstart;
             diff = diff / 1000;
             long minutes = diff / 60;
             long seconds = diff - (minutes * 60);
             long hours = minutes / 60;
             appendMsg(String.format(getString(R.string.logEnd), SDF.format(dend)));
             appendMsg(String.format("Log downlaod time %1$d hours, %2$d minutes, %3$d seconds", hours, minutes, seconds));
+            if (reSumed){
+                new disconnect().execute();
+            }
         }//onPostExecute()
 
         //String values expected:  Action, Style, message, percent
@@ -391,7 +481,7 @@ public class GetLogFragment extends Fragment {
                     }
                 } else if (parms[0].contains("PMTK001")) {
                     //PMTK182,7 failed - need to abort
-                    mLog(1,String.format("%1$s <%2$s>", curFunc, TextUtils.join(",", parms)));
+                    mLog(1, String.format("%1$s <%2$s>", curFunc, TextUtils.join(",", parms)));
                     mLog(ABORT, String.format(getString(R.string.dlAbort), cmd));
                     return null;
                 }

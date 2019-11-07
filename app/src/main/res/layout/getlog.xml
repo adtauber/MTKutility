@@ -64,7 +64,7 @@
                 android:layout_column="1"
                 android:layout_gravity="center_horizontal"
                 android:textColor="@color/colorPrimaryDark"
-                android:textSize="20dp" />
+                android:textSize="20sp" />
         </TableRow>
 
         <TableRow>
@@ -74,7 +74,7 @@
                 android:layout_column="1"
                 android:layout_gravity="center_horizontal"
                 android:textColor="@color/colorPrimaryDark"
-                android:textSize="20dp" />
+                android:textSize="20sp" />
         </TableRow>
     </TableLayout>
 
@@ -90,7 +90,7 @@
         <TextView
             android:id="@+id/mTv"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:paddingLeft="10dp"
             android:paddingRight="10dp"
             android:text=""

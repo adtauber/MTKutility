@@ -74,7 +74,7 @@ import com.google.gson.Gson;
 
 public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, DrawerLocker {
     //change veriable value to force a rebuild of the app preferences
-    public static final String initSTART = "version430";
+    public static final String initSTART = "version45";
     //    public static final String initSTART = "version00";
     DrawerLayout drawer;
     ActionBarDrawerToggle toggle;
@@ -182,6 +182,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         screenDPI = metrics.densityDpi;
         screenWidth = metrics.widthPixels;
         screenHeight = metrics.heightPixels;
+        appPrefEditor.putInt("screenDPI", screenDPI);
+        appPrefEditor.putInt("screenWidth", screenWidth);
 
         setContentView(R.layout.main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -200,8 +202,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         nav_Menu = navigationView.getMenu();
 
         // set the toolbar title
-        String title = getResources().getString(R.string.app_name) + " - " + getString(R.string.nav_home);
-        actionbar.setTitle(title);
+//        String title = getResources().getString(R.string.app_name) + " - " + getString(R.string.nav_home);
+        actionbar.setTitle(getResources().getString(R.string.app_name) + " - " + getString(R.string.nav_home));
 
         //make sure phone has Bluetooth
         hasBluetooth();
@@ -231,9 +233,17 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         fragmentManager = getSupportFragmentManager();
         Fragment fragment;
         mLog(0, String.format("+++ firstRun is set %1$b +++", firstRun));
+        int recs = appPrefs.getInt("DLcmd", 0);
         if (firstRun) {
             fragment = new AboutFragment();
             activeFragment = R.id.nav_About;
+        } else if (recs > 0) {
+            nav_Menu.findItem(R.id.nav_Home).setVisible(true);
+            nav_Menu.findItem(R.id.nav_MakeGPX).setVisible(true);
+            nav_Menu.findItem(R.id.nav_eMail).setVisible(true);
+            fragment = new GetLogFragment();
+            activeFragment = R.id.nav_GetLog;
+            actionbar.setTitle(getResources().getString(R.string.app_name) + " - " + getString(R.string.nav_getlog));
         } else {
             fragment = new HomeFragment();
             activeFragment = R.id.nav_Home;
@@ -243,8 +253,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             nav_Menu.findItem(R.id.nav_eMail).setVisible(true);
 //            nav_Menu.findItem(R.id.nav_About).setVisible(true);
         }
-        appPrefEditor.putInt("screenDPI", screenDPI);
-        appPrefEditor.putInt("screenWidth", screenWidth);
         final int commit = fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).addToBackStack(null).commit();
     }//onCreate()
 
@@ -284,7 +292,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     }//onOptionsItemSelected(MenuItem item)
 
     public boolean onNavigationItemSelected(MenuItem item) {
-        mLog(0, "Main.onNavigationItemSelected");
         // Handle navigation view item clicks here.
         mLog(0, String.format("Main.onNavigationItemSelected %s selected *+*+*+*", item.getTitle()));
         menuItem = item;
@@ -556,7 +563,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
         cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
         epoDelay = Integer.parseInt(publicPrefs.getString("epoDelay", "200"));
-        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "150"));
+        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "300"));
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
         retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "0"));
         downBlockSize = Integer.parseInt(publicPrefs.getString("downBlockSize", "2048"));
@@ -578,6 +585,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         goSleep(500);
 
         //set control preferences
+        appPrefEditor.putInt("screenDPI", screenDPI);
+        appPrefEditor.putInt("screenWidth", screenWidth);
         appPrefEditor.putBoolean("appFailed", false);
         appPrefEditor.putBoolean(initSTART, false);
         appPrefEditor.putInt("DLcmd", 0);
@@ -589,7 +598,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         appPrefEditor.putString("epoPathName", epoPathName);
         appPrefEditor.putString("logFileName", logFileName);
         appPrefEditor.putString("errFileName", errFileName);
-        appPrefEditor.putString("GPSmac", Main.GPSmac);
+        appPrefEditor.putString("GPSmac", GPSmac);
 
         //build FTP site array
         ArrayList<urlModel> sitesList = new ArrayList<>();
@@ -750,7 +759,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
         // did previous app execute fail - ask user to send an email
         OK = appPrefs.getBoolean("appFailed", false);
-        if (OK) {
+        int recs = appPrefs.getInt("DLcmd", 0);
+        if (OK && recs < 1) {
             if (logFile.exists()) {
                 // rename Log file to preserve error Log for email
                 logFile.renameTo(errFile);
@@ -880,6 +890,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             if (dialog.isShowing()) dialog.dismiss();
             haveRecCount.sendEmptyMessage(0);
         }//onPostExecute()
+
     }//class getRecCount
 
     Handler haveRecCount = new Handler() {
@@ -916,8 +927,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         mLog(0, "Main.connect");
         GPSmac = appPrefs.getString("GPSmac", "");
         if (GPSmac.isEmpty()) {
-            Main.errMsg = mContext.getString(R.string.noGPSselected);
-            Main.aborting = true;
+            errMsg = mContext.getString(R.string.noGPSselected);
+            aborting = true;
             return false;
         }
         Method m = null;
@@ -1239,7 +1250,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         String str = appPrefs.getString("saveMNEA", "");
         do {
             mLog(2, String.format("%1$s sending %2$s retry %3$d", curFunc, str, retry));
-            parms = Main.mtkCmd(str, "PMTK001,314", cmdDelay);
+            parms = mtkCmd(str, "PMTK001,314", cmdDelay);
             retry--;
             if (!parms[0].contains("PMTK001")) continue;
             retry = 0;
@@ -1264,7 +1275,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         tryagain:
         do {
             mLog(2, String.format("%1$s PMTK414 retry %2$d", curFunc, retry));
-            parms = Main.mtkCmd("PMTK414", "PMTK514", cmdDelay);
+            parms = mtkCmd("PMTK414", "PMTK514", cmdDelay);
             retry--;
             if (!parms[0].contains("PMTK514")) continue;
             retry = 0;
@@ -1275,7 +1286,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             appPrefEditor.putString("saveMNEA", str).commit();
             do {
                 mLog(2, String.format("%1$s PMTK314,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 retry %2$d", curFunc, retry));
-                parms = Main.mtkCmd(mtkCmd, "PMTK001,314", cmdDelay);
+                parms = mtkCmd(mtkCmd, "PMTK001,314", cmdDelay);
                 retry--;
                 if (!parms[0].contains("PMTK001")) continue;
                 retry = 0;
