@@ -38,7 +38,7 @@
         android:id="@+id/lla"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="10dp"
         android:background="@drawable/rounded_border"
         android:gravity="center_horizontal"
         android:orientation="vertical"
@@ -49,7 +49,7 @@
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:focusableInTouchMode="true"
             android:minHeight="1dp"
             android:text="@string/btnBfile" />
 
@@ -58,9 +58,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="5dp"
-            android:layout_marginTop="10dp"
             android:layout_marginRight="5dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="3dp"
             android:minHeight="1dp"
             android:text="@string/BfileTxt"
             android:textAppearance="?android:attr/textAppearanceSmall"
@@ -69,9 +68,10 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/llb"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="5dp"
         android:background="@drawable/rounded_border"
         android:gravity="center_horizontal"
         android:orientation="vertical"
@@ -80,7 +80,6 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:gravity="center_horizontal"
             android:orientation="horizontal">
 
@@ -91,13 +90,35 @@
                 android:minHeight="1dp"
                 android:text="@string/oneTrack"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/colorblack" />
+                android:textColor="@color/colorblack"
+                android:textSize="5pt" />
 
             <CheckBox
                 android:id="@+id/cbxOne"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintLeft_toRightOf="@+id/cbxTxt" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minHeight="1dp"
+                android:paddingStart="10dp"
+                android:paddingLeft="10dp"
+                android:text="@string/trkSecs"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:textColor="@color/colorblack"
+                android:textSize="5pt" />
+
+            <EditText
+                android:id="@+id/trkSecs"
+                android:layout_width="60dp"
+                android:layout_height="wrap_content"
+                android:hint="@string/minutes"
+                android:importantForAutofill="no"
+                android:inputType="number"
+                android:minHeight="1dp"
+                android:textSize="7pt" />
         </LinearLayout>
 
         <Button
@@ -105,13 +126,53 @@
             style="?android:attr/buttonStyleSmall"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="10dp"
             android:minHeight="1dp"
-            android:text="@string/btnBcvrt"
+            android:text="@string/btnGPXcv"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <Button
+            android:id="@+id/makeKML"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minHeight="1dp"
+            android:text="@string/btnKMLcv"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent" />
+
+        <Button
+            android:id="@+id/makeCSV"
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="5dp"
+            android:minHeight="1dp"
+            android:text="@string/btnCSVcv"
             app:layout_constraintLeft_toLeftOf="parent"
             app:layout_constraintRight_toRightOf="parent" />
     </LinearLayout>
 
+    <ScrollView
+        android:id="@+id/mSv"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_border"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="5dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/llb">
 
+        <TextView
+            android:id="@+id/mTv"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textStyle="bold"
+            android:typeface="normal" />
+    </ScrollView>
 </android.support.constraint.ConstraintLayout>

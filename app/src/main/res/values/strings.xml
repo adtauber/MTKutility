@@ -7,7 +7,7 @@
 
     <string name="cancel">Cancel</string>
     <string name="exit">Exit</string>
-    <string name="back1">press back again to exit mtkutility</string>
+    <string name="back1">press back again to exit MTKutility</string>
     <string name="back2">closing MTKutility</string>
     <string name="pleaseNav">please navigate to Home screen first</string>
 
@@ -31,10 +31,12 @@
     <string name="logrecs">%1$d log records</string>
     <string name="makeFolderErr">ERROR - create folder %1$s failed</string>
     <string name="dlDone"> download is done</string>
+    <string name="minutes">time in minutes</string>
     <string name="dlAbort">aborting download - %1$s failed</string>
     <string name="dlcAbort">aborting download - data conversion error</string>
     <string name="dlbAbort">aborting download - open %1$s failed</string>
     <string name="binAbort">aborting - GPS reply timed out</string>
+    <string name="cvtAbort">aborting - found bad log record - %s is missing</string>
 
     <string name="hs00">Things You Need to Know</string>
     <string name="hs01">app preferences</string>
@@ -124,13 +126,22 @@
     <string name="btnAPNDepo">Append EPO file</string>
     <string name="btnChkDl">Check Download</string>
     <string name="btnBfile">Select BIN file</string>
-    <string name="btnBcvrt">Create GPX file</string>
+    <string name="btnGPXcv">Create GPX file</string>
+    <string name="btnKMLcv">Create KML file</string>
+    <string name="btnCSVcv">Create CSV file</string>
     <string name="btnEfile">Select EPO file</string>
     <string name="btnAfile">Select log file</string>
     <string name="btnLfile">Select Local file</string>
 
     <string name="BfileTxt">select a binary file</string>
     <string name="oneTrack">write one track</string>
+    <string name="trkSecs">start new track (minutes)</string>
+    <string name="readBIN">reading binary file</string>
+    <string name="writeGPX">writing GPX file</string>
+    <string name="writeKML">writing KML file</string>
+    <string name="writCSV">writing CSV file</string>
+    <string name="noWayPt">file does not have way point records</string>
+
     <string name="epo60">60 byte EPO SET</string>
     <string name="epo72">72 byte EPO SET</string>
     <string name="badEPO">invalid EPO file</string>

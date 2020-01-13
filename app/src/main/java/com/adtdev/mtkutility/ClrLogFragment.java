@@ -27,13 +27,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -190,7 +186,7 @@ public class ClrLogFragment extends Fragment {
     private class eraseLog extends AsyncTask<Void, String, Void> {
         private Context mContext;
         private ProgressDialog dialog;
-        private SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.CANADA);
+        private SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.US);
         private String msg;
         private String[] parms;
         private String mode;
@@ -222,20 +218,23 @@ public class ClrLogFragment extends Fragment {
         protected Void doInBackground(Void... params) {
             String curFunc = "ClrLogFragment.eraseLog.doInBackground()";
             mLog(0, curFunc);
+            int cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
             //set appFailed at start of doInBackground - clear at end so that process hancing will get reported
             appPrefEditor.putBoolean("appFailed", true).commit();
             //format log using PMTK182,6,1
-            parms = Main.mtkCmd("PMTK182,6,1", "PMTK001,182,6", dwnDelay * 100);
-            ix = 10;
-            do {
-                mLog(1, String.format("%1$s waiting for logger ready (PMTK182,3,1,1) retry %2$d", curFunc, ix));
-                ix--;
-                parms = Main.mtkCmd("PMTK182,2,1", "PMTK182,3,1", dwnDelay * 10);
-                if (parms != null && parms[3].contains("1")) {
-                    ix = 0;
-                }
-            } while (ix > 0);
-
+            parms = Main.mtkCmd("PMTK182,6,1", "PMTK001,182,6", dwnDelay * 10, cmdRetry * 3);
+//            ix = 10;
+//            do {
+//                mLog(1, String.format("%1$s waiting for logger ready (PMTK182,3,1,1) retry %2$d", curFunc, ix));
+//                ix--;
+//                parms = Main.mtkCmd("PMTK182,2,1", "PMTK182,3,1", dwnDelay );
+//                goSleep(500);
+//                if (parms != null && parms[3].contains("1")) {
+//                    ix = 0;
+//                }
+//            } while (ix > 0);
+            mode = "S";
+            publishProgress();
             ix = 10;
             do {
                 mLog(1, String.format("%1$s getting log record count (PMTK182,2,10) retry %2$d", curFunc, ix));
@@ -261,8 +260,9 @@ public class ClrLogFragment extends Fragment {
         @Override
         protected void onProgressUpdate(String... values) {
             mLog(0, "ClrLogFragment.eraseLog.onProgressUpdate()");
-            if (mode == "L") mLog(0, msg);
-            if (mode == "W") appendMsg(msg);
+            if (mode.equals("L")) mLog(0, msg);
+            if (mode.equals("W")) appendMsg(msg);
+            if (mode.equals("SW")) this.dialog.setMessage(getString(R.string.getSetngs));;
         }
 
         @Override

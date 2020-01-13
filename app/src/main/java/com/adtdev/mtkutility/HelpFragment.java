@@ -24,11 +24,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.text.DateFormat;
-import java.util.Date;
-
 public class HelpFragment extends Fragment {
     private Context mContext;
     private static String NL = System.getProperty("line.separator");
@@ -42,7 +37,6 @@ public class HelpFragment extends Fragment {
         mContext = Main.mContext;
         logFileIsOpen = Main.logFileIsOpen;
         mLog(0,"HelpFragment.onCreateView()");
-
         // Inflate the layout for this fragment
         mV = inflater.inflate(R.layout.webview, container, false);
         wv = mV.findViewById(R.id.webview);
@@ -71,57 +65,61 @@ public class HelpFragment extends Fragment {
         dialog.setTitle("Select help topic").setItems(cs, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int idx) {
-                switch (idx) {
-                    case 0:
-                        helpXML = "file:///android_asset/overview.html";
-                        mLog(0,"HelpFragment.selectSource() - selected overview.html");
-                        break;
-                    case 1:
-                        helpXML = "file:///android_asset/appPref.html";
-                        mLog(0,"HelpFragment.selectSource() - selected appPref.html");
-                        break;
-                    case 2:
-                        helpXML = "file:///android_asset/home.html";
-                        mLog(0,"HelpFragment.selectSource() - selected home.html");
-                        break;
-                    case 3:
-                        helpXML = "file:///android_asset/download.html";
-                        mLog(0,"HelpFragment.selectSource() - selected download.html");
-                        break;
-                    case 4:
-                        helpXML = "file:///android_asset/eraseGPS.html";
-                        mLog(0,"HelpFragment.selectSource() - selected eraseGPS.html");
-                        break;
-                    case 5:
-                        helpXML = "file:///android_asset/makeGPX.html";
-                        mLog(0,"HelpFragment.selectSource() - selected makeGPX.html");
-                        break;
-                    case 6:
-                        helpXML = "file:///android_asset/getEPO.html";
-                        mLog(0,"HelpFragment.selectSource() - selected getEPO.html");
-                        break;
-                    case 7:
-                        helpXML = "file:///android_asset/updateAGPS.html";
-                        mLog(0,"HelpFragment.selectSource() - selected updateAGPS.html");
-                        break;
-                    case 8:
-                        helpXML = "file:///android_asset/settings.html";
-                        mLog(0,"HelpFragment.selectSource() - selected settings.html");
-                        break;
-                    case 9:
-                        helpXML = "file:///android_asset/sendlog.html";
-                        mLog(0,"HelpFragment.selectSource() - selected sendlog.html");
-                        break;
-                    case 10:
-                        helpXML = "file:///android_asset/exit.html";
-                        mLog(0,"HelpFragment.selectSource() - selected exit.html");
-                        break;
-                }
+                changeFile(idx);
                 dialog.dismiss();
                 wv.loadUrl(helpXML);
             }
         }).show();
     }//selectSource()
+
+    private void changeFile(int idx){
+        switch (idx) {
+            case 0:
+                helpXML = "file:///android_asset/overview.html";
+                mLog(0,"HelpFragment.selectSource() - selected overview.html");
+                break;
+            case 1:
+                helpXML = "file:///android_asset/appPref.html";
+                mLog(0,"HelpFragment.selectSource() - selected appPref.html");
+                break;
+            case 2:
+                helpXML = "file:///android_asset/home.html";
+                mLog(0,"HelpFragment.selectSource() - selected home.html");
+                break;
+            case 3:
+                helpXML = "file:///android_asset/download.html";
+                mLog(0,"HelpFragment.selectSource() - selected download.html");
+                break;
+            case 4:
+                helpXML = "file:///android_asset/eraseGPS.html";
+                mLog(0,"HelpFragment.selectSource() - selected eraseGPS.html");
+                break;
+            case 5:
+                helpXML = "file:///android_asset/makeGPX.html";
+                mLog(0,"HelpFragment.selectSource() - selected makeGPX.html");
+                break;
+            case 6:
+                helpXML = "file:///android_asset/getEPO.html";
+                mLog(0,"HelpFragment.selectSource() - selected getEPO.html");
+                break;
+            case 7:
+                helpXML = "file:///android_asset/updateAGPS.html";
+                mLog(0,"HelpFragment.selectSource() - selected updateAGPS.html");
+                break;
+            case 8:
+                helpXML = "file:///android_asset/settings.html";
+                mLog(0,"HelpFragment.selectSource() - selected settings.html");
+                break;
+            case 9:
+                helpXML = "file:///android_asset/sendlog.html";
+                mLog(0,"HelpFragment.selectSource() - selected sendlog.html");
+                break;
+            case 10:
+                helpXML = "file:///android_asset/exit.html";
+                mLog(0,"HelpFragment.selectSource() - selected exit.html");
+                break;
+        }
+    }//changeFile()
 
     private void mLog(int mode, String msg) {
         if (logFileIsOpen) {

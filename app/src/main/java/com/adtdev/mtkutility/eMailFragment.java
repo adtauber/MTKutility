@@ -30,10 +30,6 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.text.DateFormat;
-import java.util.Date;
 
 import com.adtdev.fileChooser.FileChooser;
 

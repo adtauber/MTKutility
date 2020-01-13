@@ -37,13 +37,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Locale;
 
 //import adtdev.com.mL2.R;
@@ -506,6 +503,11 @@ public class SettingsFragment extends Fragment {
                 if ((logFldsMask & cbxAziMask) == cbxAziMask) {
                     cbxAzi = checked;
                     cbxAzi();
+                }
+
+                if ((logFldsMask & cbxSNRMask) == cbxSNRMask) {
+                    cbxSNR = checked;
+                    cbxSNR();
                 }
 
                 if ((logFldsMask & cbxEleMask) == cbxEleMask) {
@@ -1536,7 +1538,7 @@ public class SettingsFragment extends Fragment {
         final EditText txtByD = promptView.findViewById(R.id.txtByD);
         final EditText txtByS = promptView.findViewById(R.id.txtByS);
         //		dVal = txtByTd / 10.0;
-        sVal = String.format(Locale.CANADA, "%.1f", txtByTd);
+        sVal = String.format(Locale.US, "%.1f", txtByTd);
         txtByT.setText(sVal);
 
         //		val = txtByDi / 10;
@@ -1712,7 +1714,7 @@ public class SettingsFragment extends Fragment {
         sb.append("</tbody></table></td></tr>");
 
         sb.append("<tr align=\"center\"><td colspan=\"3\" style=\"vertical-align: top;\" >Recording Frequency<br></td></tr>");
-        sb.append("<tr><td style=\"vertical-align: top;\">time:" + String.format(Locale.CANADA, "%.1f", txtByTd) + " sec<br></td>");
+        sb.append("<tr><td style=\"vertical-align: top;\">time:" + String.format(Locale.US, "%.1f", txtByTd) + " sec<br></td>");
         sb.append("<td style=\"vertical-align: top;\">dist:" + Integer.toString(txtByDi) + " m.<br></td>");
         sb.append("<td style=\"vertical-align: top;\">speed:" + Integer.toString(txtBySi) + " km/h<br></td></tr>");
         sb.append("<tr align=\"center\"><td colspan=\"3\" style=\"vertical-align: top;\">" + lrStrng + "<br></td></tr>");

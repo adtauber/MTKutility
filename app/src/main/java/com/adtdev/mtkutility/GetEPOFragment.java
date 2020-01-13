@@ -42,13 +42,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 
 import com.adtdev.fileChooser.FileChooser;
 
@@ -396,14 +393,14 @@ public class GetEPOFragment extends Fragment {
         String epoPathName;
         boolean OK = true;
 
-        epoPathName = appPrefs.getString("epoPathName", "");
-        epoPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), epoPathName);
+        epoPath = new File(appPrefs.getString("epoPath", ""));
+//        epoPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), epoPathName);
         // make sure mtkutility/bin directory exists - create if it is missing
         if (!epoPath.exists()) {
             OK = epoPath.mkdirs();
         }
         if (!OK) {
-            mLog(ABORT, String.format("%1$s aborting - create %2$s failed +++", curFunc, epoPathName));
+            mLog(ABORT, String.format("%1$s aborting - create %2$s failed +++", curFunc, epoPath));
             return;
         }
         epoPath = new File(epoPath.toString(), ftpDLfile);

@@ -29,7 +29,6 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -43,9 +42,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -56,7 +52,7 @@ import java.util.Locale;
 public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener {
 
     private static String NL = System.getProperty("line.separator");
-    SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.CANADA);
+    SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.US);
     private final int REQUEST_ENABLE_BT = 88;
     private static StringBuilder mText = new StringBuilder();
     private static final int TEXT_MAX_SIZE = 5120;

@@ -73,9 +73,12 @@ import java.util.List;
 import com.google.gson.Gson;
 
 public class Main extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, DrawerLocker {
+
+    //use to turn off Bluetooth check on vMware client
+    private boolean checkBluetooth = true;
     //change veriable value to force a rebuild of the app preferences
-    public static final String initSTART = "version45";
-    //    public static final String initSTART = "version00";
+    public static final String initSTART = "version48";
+//        public static final String initSTART = "version00";
     DrawerLayout drawer;
     ActionBarDrawerToggle toggle;
 
@@ -102,6 +105,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     public static SharedPreferences appPrefs;
     public static SharedPreferences.Editor appPrefEditor;
     public static Activity mContext;
+    public static Context aContext;
     public static String errMsg;
     public static boolean aborting = false;
     public static boolean firstRun = true;
@@ -142,9 +146,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     private File binPath;
     private File epoPath;
     private File gpxPath;
+    private File kmlPath;
+    private File csvPath;
     private String basePathName = "mtkutility";
     private String binPathName = "mtkutility/bin";
     private String gpxPathName = "mtkutility/gpx";
+    private String kmlPathName = "mtkutility/kml";
+    private String csvPathName = "mtkutility/csv";
     private String epoPathName = "mtkutility/epo";
     private String logFileName = "MTKutilityLog.txt";
     private String errFileName = "MTKutilityErr.txt";
@@ -160,6 +168,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mContext = this;
+        aContext = getApplicationContext();
 
         //turn off screen rotation - force portrait mode
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
@@ -419,7 +428,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         mLog(0, "****** End of Stack ******");
         //create restart intent
         Intent intent = new Intent(mContext, Main.class);
-        mContext.startActivity(intent);
+//        mContext.startActivity(intent);
         // make sure we die, otherwise the app will hang ...
         android.os.Process.killProcess(android.os.Process.myPid());
         System.exit(2);
@@ -543,7 +552,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
         } else {
-            if (!bluetoothAdapter.isEnabled()) {
+            if (checkBluetooth && !bluetoothAdapter.isEnabled()) {
                 Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
                 goSleep(3000);
@@ -577,7 +586,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 //        if (htmlFont == 16) htmlFont = 16;
 //        if (cmdDelay == 50) cmdDelay = 50;
 //        if (epoDelay == 200) epoDelay = 200;
-        if (dwnDelay == 150) dwnDelay = 300;
+//        if (dwnDelay == 150) dwnDelay = 300;
 
         //clear both the app and private preferences
         appPrefs.edit().clear().commit();
@@ -592,12 +601,6 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         appPrefEditor.putInt("DLcmd", 0);
 
         //store file info for fragments
-        appPrefEditor.putString("basePathName", basePathName);
-        appPrefEditor.putString("binPathName", binPathName);
-        appPrefEditor.putString("gpxPathName", gpxPathName);
-        appPrefEditor.putString("epoPathName", epoPathName);
-        appPrefEditor.putString("logFileName", logFileName);
-        appPrefEditor.putString("errFileName", errFileName);
         appPrefEditor.putString("GPSmac", GPSmac);
 
         //build FTP site array
@@ -635,35 +638,12 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     }//initialRun()
 
     protected static void mLog(int mode, String msg) {
-        if (!logFileIsOpen) {
-            return;
-        }
-        if (mode < noTrunc) {
-            if (msg.length() > 127) {
-                msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
-            }
-        }
-        switch (mode) {
-            case 0:
-                break;
-            case 1:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 2:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case 3:
-                if (mode > debugLVL) {
-                    return;
-                }
-                break;
-            case ABORT:
-                throw new RuntimeException(msg);
-        }
+        if (mode == ABORT) throw new RuntimeException(msg);
+        if (!logFileIsOpen) return;
+        if (mode != noTrunc && mode > debugLVL) return;
+        if (mode == noTrunc && msg.length() > 127)
+            msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
+
         String time = DateFormat.getDateTimeInstance().format(new Date());
         time = time.substring(12);
         time = time.replace("AM", "");
@@ -698,7 +678,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         OK = true;
         basePath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), basePathName);
         if (!basePath.exists()) OK = basePath.mkdir();
-        if (!OK) {
+//        OK = false; //use for testing
+        if (OK) {
+            appPrefEditor.putString("basePath", basePath.toString()).commit();
+        } else {
             errMsg = String.format(getString(R.string.makeFolderErr), basePathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
@@ -706,12 +689,37 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
 
         gpxPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), gpxPathName);
-        if (!gpxPath.exists())
-//            OK = false; //use for testing
-            OK = gpxPath.mkdir();
-        if (!OK) {
-            //makeFolderErr
+        if (!gpxPath.exists()) OK = gpxPath.mkdir();
+//        OK = false; //use for testing
+        if (OK) {
+            appPrefEditor.putString("gpxPath", gpxPath.toString()).commit();
+        } else {
             errMsg = String.format(getString(R.string.makeFolderErr), gpxPathName);
+            Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
+            aborting = true;
+            return;
+        }
+
+        kmlPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), kmlPathName);
+        if (!kmlPath.exists()) OK = kmlPath.mkdir();
+//        OK = false; //use for testing
+        if (OK) {
+            appPrefEditor.putString("kmlPath", kmlPath.toString()).commit();
+        } else {
+            errMsg = String.format(getString(R.string.makeFolderErr), kmlPathName);
+            Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
+            aborting = true;
+            return;
+        }
+
+        csvPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), csvPathName);
+        if (!csvPath.exists()) OK = csvPath.mkdir();
+//        OK = false; //use for testing
+        if (OK) {
+            appPrefEditor.putString("csvPath", csvPath.toString()).commit();
+        } else {
+            //makeFolderErr
+            errMsg = String.format(getString(R.string.makeFolderErr), csvPathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
             return;
@@ -719,7 +727,10 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
         binPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), binPathName);
         if (!binPath.exists()) OK = binPath.mkdir();
-        if (!OK) {
+//        OK = false; //use for testing
+        if (OK) {
+            appPrefEditor.putString("binPath", binPath.toString()).commit();
+        } else {
             errMsg = String.format(getString(R.string.makeFolderErr), binPathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
@@ -727,13 +738,14 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         }
 
         epoPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), epoPathName);
-        // make sure mtkutility/bin directory exists - create if it is missing
         if (!epoPath.exists()) OK = epoPath.mkdir();
-        if (!OK) {
+//        OK = false; //use for testing
+        if (OK) {
+            appPrefEditor.putString("epoPath", epoPath.toString()).commit();
+        } else {
             errMsg = String.format(getString(R.string.makeFolderErr), epoPathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
-            return;
         }
     }//makeSureFoldersExist
 
@@ -1039,6 +1051,33 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         return null;
     }//mtkCmd()
 
+    protected static String[] mtkCmd(String mtkcmd, String mtkreply, int delay, int retry) {
+        retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "0"));
+        String[] sArray = new String[99];
+        int ic = 0;
+        while (ic < retry) {
+            mLog(1, String.format("Main.mtkCmd(\"%1$s\",\"%2$s\",%3$d)>>>>><<<<<", mtkcmd, mtkreply, delay));
+            if (sendCommand(mtkcmd)) {
+                goSleep(delay);
+                int ix = 0;
+                while (ix < cmdRetry) {
+                    ix++;
+                    sArray = waitForReply(mtkreply, delay);
+                    delay += retryInc;
+                    if (sArray == null || sArray.length < 1) {
+                        mLog(2, String.format("Main.mtkCmd retry %1$d with %2$d delay *****", ix, delay));
+                        if (doRetry) continue;
+                        else return null;
+                    } else {
+                        return sArray;
+                    }
+                }
+            }
+            ic++;
+        }
+        return null;
+    }//mtkCmd()
+
     protected static boolean sendCommand(String command) {
         String curFunc = "Main.sendCommand";
         mLog(1, String.format("%1$s (%2$s)>>>>>", curFunc, command));
@@ -1150,7 +1189,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
                 if (doAppend) {
                     sndBuf.append(b);
                 }
-                //do not return NMEA sebtebces
+                //do not return NMEA sentences
                 if (sndBuf.length() == 3) {
                     if (sndBuf.toString().contains("GP")) {
                         sndBuf = new StringBuilder();

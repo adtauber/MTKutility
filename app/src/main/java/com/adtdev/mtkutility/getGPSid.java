@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
-import java.io.OutputStreamWriter;
 import java.util.Set;
 
 /**

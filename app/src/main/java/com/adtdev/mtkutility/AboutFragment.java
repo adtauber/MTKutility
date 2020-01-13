@@ -23,7 +23,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
-import java.io.OutputStreamWriter;
 
 public class AboutFragment extends Fragment {
     private Context mContext;

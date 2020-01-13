@@ -40,8 +40,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -58,7 +56,7 @@ public class UpdtAGPSFragment extends Fragment {
     private static final int EPO60 = 60;
     private static final int EPO72 = 72;
     private static final int doLOCAL = 0;
-    private SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.CANADA);
+    private SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.US);
     private TextView tv1;
     private ScrollView mSv;
     private TextView mTv;
