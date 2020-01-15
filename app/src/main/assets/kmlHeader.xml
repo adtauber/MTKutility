@@ -1,0 +1,694 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2" xmlns:kml="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom"><Document xmlns:atom="http://www.w3.org/2005/Atom" >
+<atom:generator uri="https://github.com/adtauber/MTKutility">MTKutility</atom:generator>
+  <open>1</open>
+  <Style id="Style02000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/parking_lot.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style02001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/parking_lot.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style10000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/dining.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style10001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/dining.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style010A0">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/dining.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style010A1">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/dining.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleT0">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/T.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleT1">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/T.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style80000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style80001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/placemark_circle.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style04000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/post_office.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style04001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/post_office.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleS0">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/S.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleS1">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/S.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style20000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/water.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style20001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/water.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style00100">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/camera.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style00101">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/camera.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleM0">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/M.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleM1">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/M.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style00400">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/phone.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style00401">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/phone.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style01080">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/phone.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style01081">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/phone.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style08000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/rail.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style08001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/rail.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style01040">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/grn-stars.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style01041">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/grn-stars.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style01010">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/camera.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style01011">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/camera.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleD0">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/D.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleD1">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/D.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style01000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/bus.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style01001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/bus.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleB0">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="StyleB1">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style40000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/flag.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style40001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/flag.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style03000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/V.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style03001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/paddle/V.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style00200">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/gas_stations.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style00201">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/gas_stations.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style00800">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/euro.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style00801">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/shapes/euro.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style05000">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/pal4/icon29.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>0</scale>
+    </LabelStyle>
+  </Style>
+  <Style id="Style05001">
+    <IconStyle>
+      <Icon>
+        <href>http://maps.google.com/mapfiles/kml/pal4/icon29.png</href>
+      </Icon>
+    </IconStyle>
+    <LabelStyle>
+      <scale>1</scale>
+    </LabelStyle>
+  </Style>
+  <StyleMap id="StyleX0200">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style02000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style02001</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX1000">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style10000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style10001</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX010A">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style010A0</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style010A1</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleT">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#StyleT0</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#StyleT1</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX8000">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style80000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style80001</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0400">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style04000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style04001</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleS">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#StyleS0</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#StyleS1</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX2000">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style20000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style20001</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0010">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style00100</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style00101</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleM">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#StyleM0</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#StyleM1</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0040">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style00400</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style00401</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0108">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style01080</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style01081</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0800">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style08000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style08001</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0104">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style01040</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style01041</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0101">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style01010</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style01011</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleD">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#StyleD0</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#StyleD1</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0100">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style01000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style01001</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleB">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#StyleB0</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#StyleB1</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX4000">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style40000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style40001</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0300">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style03000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style03001</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0020">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style00200</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style00201</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0080">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style00800</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style00801</styleUrl>
+    </Pair>
+  </StyleMap>
+  <StyleMap id="StyleX0500">
+    <Pair>
+      <key>normal</key>
+      <styleUrl>#Style05000</styleUrl>
+    </Pair>
+    <Pair>
+      <key>highlight</key>
+      <styleUrl>#Style05001</styleUrl>
+    </Pair>
+  </StyleMap>
