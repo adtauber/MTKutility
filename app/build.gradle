@@ -17,8 +17,8 @@ android {
         applicationId "com.adtdev.mtkutility"
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 48
-        versionName "4.8"
+        versionCode 50
+        versionName "5.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {

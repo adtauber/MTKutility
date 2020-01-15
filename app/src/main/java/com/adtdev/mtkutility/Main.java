@@ -77,7 +77,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     //use to turn off Bluetooth check on vMware client
     private boolean checkBluetooth = true;
     //change veriable value to force a rebuild of the app preferences
-    public static final String initSTART = "version48";
+    public static final String initSTART = "version50";
 //        public static final String initSTART = "version00";
     DrawerLayout drawer;
     ActionBarDrawerToggle toggle;

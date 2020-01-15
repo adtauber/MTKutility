@@ -165,7 +165,7 @@ public class MakeGPXFragment extends Fragment {
     private String tmpString;
     private String formattedDate;
     private int wayRec = 0;
-    private int trkRec = 0;
+    private int trkRec = 1;
     private int linesOut = 0;
     private String savedTrk = "0";
     private String newTrk;
@@ -1325,21 +1325,23 @@ public class MakeGPXFragment extends Fragment {
             mLog(2, String.format("MakeGPXFragment.makeKML.trkPointPass(%s)", sType));
             reader = null;
             linesOut = 0;
+            count = 0;
             try {
                 reader = new BufferedReader(new FileReader(wrkFile));
                 while ((mLine = reader.readLine()) != null) {
                     linesOut++;
                     bytesRead += mLine.length();
                     if (linesOut == 1) continue;
-                    switch (sType) {
-                        case "wayRec":
-                            trkRecLine(wayRec, mLine);
-                            break;
-                        case "trkRec":
-                            trkRecLine(trkRec, mLine);
-                            break;
-                        default:
-                    }
+                    trkRecLine(type, mLine);
+//                    switch (sType) {
+//                        case "wayRec":
+//                            trkRecLine(wayRec, mLine);
+//                            break;
+//                        case "trkRec":
+//                            trkRecLine(trkRec, mLine);
+//                            break;
+//                        default:
+//                    }
                     pct = (int) ((bytesRead * 100) / bytesToRead);
                     if (pct > 100) pct = 100;
                     dialog.setProgress(pct);
@@ -1353,7 +1355,8 @@ public class MakeGPXFragment extends Fragment {
                 Main.buildCrashReport(e);
             } finally {
                 try {
-                    if (reader != null) reader.close();
+//                    if (reader != null) reader.close();
+                    reader.close();
                 } catch (IOException e) {
                     mLog(0, "**** makeGPX.WayPointPass() IOException-reader.close");
                     Main.buildCrashReport(e);
@@ -1548,12 +1551,12 @@ public class MakeGPXFragment extends Fragment {
                 mDate = new java.util.Date(Long.parseLong(cells[0]) * 1000);
                 fileWriter(csvDate.format(add1024toDate(mDate)));
                 fileWriter(",");
-                tmpString = "0";
+                formattedDate = String.format(Locale.US, "%s", csvTime.format(add1024toDate(mDate)));
                 if ((formatMask & FORMAT_MILLISECOND) == FORMAT_MILLISECOND) {
                     tmpString = String.valueOf((int) Math.round(Integer.parseInt(cells[16]) / 100.0));
-                    tmpString = String.format(Locale.US, "%s.%s", csvTime.format(add1024toDate(mDate)), tmpString);
+                    formattedDate = String.format(Locale.US, "%s.%s", formattedDate, tmpString);
                 }
-                fileWriter(tmpString);
+                fileWriter(formattedDate);
             } else fileWriter(",");
 
             fileWriter(",");

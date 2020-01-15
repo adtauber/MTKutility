@@ -7,6 +7,7 @@
 
 
 
+
   
   <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>makeGPX</title></head><body>
 
@@ -36,6 +37,11 @@ in use &lt;sat&gt;, Horizontal Dilution Of Precision &lt;hdop&gt;,
 Positional Dilution Of Precision &lt;pdop&gt;, and Vertical Dilution Of
 Precision &lt;vdop&gt;.&nbsp; <span style="font-weight: bold; color: rgb(204, 0, 0);">Note: track point records will not be produced if UTS Date/Time recording is turned off.</span><br>
 <u1:p>
+<br>
+The <span style="color: rgb(51, 102, 255);">write one track</span> and <span style="color: rgb(51, 102, 255);">start new track (minutes)</span> options are for GPX file creation.&nbsp; The </u1:p><span style="color: rgb(51, 102, 255);">start new track (minutes)</span><u1:p>
+setting determines the time difference between track points when track
+point recording is interrupted by a satellite signal loss or when you
+turn your logger off and on.&nbsp; When you checkmark </u1:p><span style="color: rgb(51, 102, 255);">write one track</span><u1:p> a single track GPX is created even though the source file may have multiple tracks.&nbsp; This overrides the </u1:p><span style="color: rgb(51, 102, 255);">start new track (minutes)</span><u1:p> setting.<br>
 <br>
 </u1:p>The KML file is created in MTKutility/kml.&nbsp; I adopted the
 BT747 file format and&nbsp; xml tags as this appeared to provide the
@@ -75,4 +81,5 @@ fix values that are outside this list will display as a numeric value<br>
 <div style="margin-left: 40px;">B - button (produces a way point)<br>
 </div>
 and any combination of these 4 values<br>
+<br>
 </body></html>
