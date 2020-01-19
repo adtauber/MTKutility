@@ -77,8 +77,8 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     //use to turn off Bluetooth check on vMware client
     private boolean checkBluetooth = true;
     //change veriable value to force a rebuild of the app preferences
-    public static final String initSTART = "version50";
-//        public static final String initSTART = "version00";
+    public static final String initSTART = "version51";
+    //        public static final String initSTART = "version00";
     DrawerLayout drawer;
     ActionBarDrawerToggle toggle;
 
@@ -114,7 +114,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     public static boolean stopNMEA = false;
     public static OutputStreamWriter logWriter;
     private static StringBuilder readBuf = new StringBuilder();
-    private static int rx = 0;
+    private int trksecs;
 
     private int screenWidth;
     private int screenHeight;
@@ -579,7 +579,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         noGPS = publicPrefs.getBoolean("noGPS", false);
         noLOG = publicPrefs.getBoolean("noLOG", false);
         noNMEA = publicPrefs.getBoolean("noNMEA", false);
+
         GPSmac = appPrefs.getString("GPSmac", "");
+        trksecs = appPrefs.getInt("trkSecs", 10);
 
 //        if (homeFont == 16) homeFont = 16;
 //        if (btnsFont == 16) btnsFont = 16;
@@ -599,6 +601,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         appPrefEditor.putBoolean("appFailed", false);
         appPrefEditor.putBoolean(initSTART, false);
         appPrefEditor.putInt("DLcmd", 0);
+        appPrefEditor.putInt("trkSecs", trksecs);
 
         //store file info for fragments
         appPrefEditor.putString("GPSmac", GPSmac);
@@ -1153,7 +1156,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         int retry = cmdRetry;
         char b = '\0';
 
-        rx = 0;
+        int rx = 0;
         readBuf = new StringBuilder();
         readBuf.append(readString(delay));
         StringBuilder sndBuf = new StringBuilder();

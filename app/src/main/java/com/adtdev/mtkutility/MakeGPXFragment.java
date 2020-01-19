@@ -112,23 +112,24 @@ public class MakeGPXFragment extends Fragment {
 
     private String fileNamePrefix;
     private Date fileDate;
-    private static final int MakeGPX = 0;
-    private static final int MakeKML = 1;
-    private static final int MakeCSV = 2;
+//    private static final int MakeGPX = 0;
+//    private static final int MakeKML = 1;
+//    private static final int MakeCSV = 2;
 
     private static final int GPXwpt = 1;
     private static final int GPXtrk = 2;
     private byte[] emptyseparator = new byte[0x10];
     private boolean gpx_in_trk;
+    private boolean logStoped = false;
     private int formatMask = 0;
-    private int record_count_total = 0;
+    private int records = 0;
     private short nrOfRecordsInSector;
     private int gpx_trk_number = 0;
     private long totalBytes = 0;
     private byte[] buffer = new byte[SIZEOF_SECTOR];
     private int count = 0;
     private java.util.Date mDate;
-    private String sDate;
+//    private String sDate;
 
     private String[] cells;
     private String mLine;
@@ -168,7 +169,6 @@ public class MakeGPXFragment extends Fragment {
     private int trkRec = 1;
     private int linesOut = 0;
     private String savedTrk = "0";
-    private String newTrk;
     private long lastUTC;
 
     private String in1 = "  ";
@@ -198,7 +198,6 @@ public class MakeGPXFragment extends Fragment {
     private long bytesToRead;
     private OutputStreamWriter logWriter = Main.logWriter;
     private BufferedWriter mWriter = null;
-    private FileInputStream mInputstream = null;
     private BufferedInputStream mReader = null;
     private File gpxFile;
     private File kmlFile;
@@ -251,7 +250,7 @@ public class MakeGPXFragment extends Fragment {
 
         cbxOne.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mLog(1, "*** MakeGPXFragment.onCheckedChanged() *** allow insecure checkbox changed");
+                mLog(0, "*** MakeGPXFragment.onCheckedChanged() *** allow insecure checkbox changed");
                 cbxone = isChecked;
             }
         });
@@ -312,12 +311,10 @@ public class MakeGPXFragment extends Fragment {
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mLog(0, "MakeGPXFragment.onViewCreated()");
         debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
-
         makeGPX.setEnabled(false);
         makeKML.setEnabled(false);
         makeCSV.setEnabled(false);
         getfile.requestFocus();
-
 
         for (int i = 0; i < 0x10; i++) {
             emptyseparator[i] = (byte) 0xFF;
@@ -335,6 +332,7 @@ public class MakeGPXFragment extends Fragment {
                     fileName.setText(binPath);
                     //short pause to let app finish file enquiry
                     goSleep(300);
+                    mLog(1, "selected: " + binPath);
                     new MakeGPXFragment.makeWrkFile(getActivity()).execute();
                 }
             }
@@ -380,7 +378,7 @@ public class MakeGPXFragment extends Fragment {
     } //fileWriter()
 
     private void getfile() {
-        mLog(1, "MakeGPXFragment.getfile()");
+        mLog(0, "MakeGPXFragment.getfile()");
         binPath = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString();
         binPath = binPath + "/mtkutility/bin";
         Intent intent = new Intent(mContext, FileChooser.class);
@@ -439,6 +437,7 @@ public class MakeGPXFragment extends Fragment {
     } //getRCRs()
 
     private String getRecNum(int type) {
+        mLog(3, "MakeGPXFragment.getRecNum()");
         if (type == GPXwpt) {
             wayRec++;
             return "WP" + String.format(Locale.US, "%07d", wayRec);
@@ -446,9 +445,10 @@ public class MakeGPXFragment extends Fragment {
             trkRec++;
             return "TP" + String.format(Locale.US, "%07d", trkRec);
         }
-    }
+    } //getRecNum()
 
     private String getValid(String valid) {
+        mLog(3, "MakeGPXFragment.getValid()");
         switch (valid) {
             case "1":
                 return "nofix";
@@ -467,7 +467,7 @@ public class MakeGPXFragment extends Fragment {
             default:
                 return valid;
         }
-    }
+    } //getValid()
 
     public void goSleep(int mSec) {
         mLog(3, String.format(Locale.US, "MakeGPXFragment.goSleep(%d)", mSec));
@@ -487,6 +487,7 @@ public class MakeGPXFragment extends Fragment {
     } //scrollDown()
 
     private void sendToast(final String msg) {
+        mLog(3, "MakeGPXFragment.sendToast()");
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(new Runnable() {
             @Override
@@ -545,7 +546,7 @@ public class MakeGPXFragment extends Fragment {
             try {
                 mFileWriter = new FileWriter(wrkFile);
                 mWriter = new BufferedWriter(mFileWriter, SIZEOF_SECTOR / 8);
-                mInputstream = new FileInputStream(bin_file);
+                FileInputStream mInputstream = new FileInputStream(bin_file);
                 mReader = new BufferedInputStream(mInputstream, SIZEOF_SECTOR);
                 fileWriter(wrkHeader);
                 BinToCSVconvert();
@@ -585,11 +586,12 @@ public class MakeGPXFragment extends Fragment {
         } //onProgressUpdate
 
         private void BinToCSVconvert() throws IOException {
-            mLog(2, "MakeGPXFragment.makeWrkFile.BinToCSVconvert()");
+            mLog(1, "MakeGPXFragment.makeWrkFile.BinToCSVconvert()");
             int sector_count = 0;
             int log_count_fullywrittensector = -1;
 
-            record_count_total = 0;
+            records = 0;
+            int record_count_total = 0;
             gpx_trk_number = 0;
 
             int totalNrOfSectors = Double.valueOf(bin_file.length() / SIZEOF_SECTOR).intValue();
@@ -597,11 +599,12 @@ public class MakeGPXFragment extends Fragment {
             if (bin_file.length() % SIZEOF_SECTOR != 0) {
                 totalNrOfSectors++;
             }
-            mLog(1, "totalNrOfSectors: " + totalNrOfSectors);
+            mLog(2, "totalNrOfSectors: " + totalNrOfSectors);
 
             int bytes_in_sector = 0;
             while ((bytes_in_sector = mReader.read(buffer, 0, SIZEOF_SECTOR)) > 0) {
                 sector_count++;
+                mLog(1, String.format(Locale.US, "**** processing sector %d", sector_count));
                 ByteBuffer buf = ByteBuffer.wrap(buffer);
                 buf.order(ByteOrder.LITTLE_ENDIAN);
                 buf.position(0x0);
@@ -621,7 +624,7 @@ public class MakeGPXFragment extends Fragment {
                 record_count_total = record_count_total + nrOfRecordsInSector;
                 if (bytes_in_sector < SIZEOF_SECTOR) {
                     // Reached the end of the file or something is wrong
-                    mLog(2, "End of file!");
+                    mLog(1, "End of file!");
                     break;
                 }
                 // do a flush after each sector is read
@@ -637,6 +640,7 @@ public class MakeGPXFragment extends Fragment {
             mLog(2, "MakeGPXFragment.makeWrkFile.BinSectorParse()");
             String s, x;
             int sectorRecordsRead = 0;
+            logStoped = false;
             // Skip the header (which is 0x200 bytes long)
             buf.position(0x200);
             while (sectorRecordsRead < nrOfRecordsInSector) {
@@ -664,10 +668,19 @@ public class MakeGPXFragment extends Fragment {
                     // So we found a record separator..
                     byte separator_type = tmp[7];
                     mLog(2, String.format("Record separator %s", bytesToHex(tmp)));
+                    //skip records when log is stopped - look for log start separator
+                    if (tmp[7] == 0x07 && tmp[8] == 0x04) {
+                        logStoped = true;
+                        mLog(1, String.format(Locale.US, "logStoped %b", logStoped));
+                    }
+                    if (tmp[7] == 0x07 && tmp[8] == 0x06) {
+                        logStoped = false;
+                        mLog(1, String.format(Locale.US, "logStoped %b", logStoped));
+                    }
                     if (!cbxone && gpx_in_trk && tmp[7] == 0x07 && tmp[8] == 0x06) {
                         //log start separator found - start a new track
                         gpx_in_trk = false;
-                        //Holux M-241 logs a track point before the log start separator
+                        //Holux M-241 sometimes logs a track point before the log start separator
                         if (HOLUX_M241 && sectorRecordsRead < 3) gpx_in_trk = true;
                     }
 
@@ -699,12 +712,18 @@ public class MakeGPXFragment extends Fragment {
                     mLog(2, "Empty space, assume end of sector");
                     break;
                 } else {
-                    buf.position(buf.position() - separator_length);
+                    if (logStoped) {
+                        buf.position(buf.position() - separator_length + 1);
+                    } else
+                        buf.position(buf.position() - separator_length);
                 }
+
                 // So this is not a separator but it is an actual record, read it!
                 sectorRecordsRead++;
                 mLog(3, String.format(Locale.US,
                         "Read record: %d of %d position %x", sectorRecordsRead, nrOfRecordsInSector, buf.position()));
+
+                if (logStoped) continue;
 
                 if (!gpx_in_trk) {
                     gpx_in_trk = true;
@@ -958,11 +977,12 @@ public class MakeGPXFragment extends Fragment {
                     mLog(3, "Distance " + tmpString);
                 }
 
+                records++;
                 buf.position((buf.position() - bytesRead));
                 byte[] tmp2 = new byte[bytesRead];
                 buf.get(tmp2, 0, bytesRead);
                 String str = bytesToHex(tmp2);
-                mLog(2, str);
+                mLog(1, String.valueOf(records) + ": " + str);
                 cChecksum = calcCheckSum(tmp2, bytesRead);
 
                 if (!HOLUX_M241) {
@@ -1130,7 +1150,7 @@ public class MakeGPXFragment extends Fragment {
             //make sure record has a good checksum
             if (!cells[18].equals(cells[19])) return;
             if (!cbxone) {
-                newTrk = cells[20];
+                String newTrk = cells[20];
                 if (type == GPXtrk && !newTrk.equals(savedTrk)) {
                     savedTrk = newTrk;
                     if (linesOut < 2) {
