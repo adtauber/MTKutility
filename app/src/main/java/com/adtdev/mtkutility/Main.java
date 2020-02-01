@@ -62,6 +62,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.ArrayList;
@@ -77,7 +79,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     //use to turn off Bluetooth check on vMware client
     private boolean checkBluetooth = true;
     //change veriable value to force a rebuild of the app preferences
-    public static final String initSTART = "version51";
+    public static final String initSTART = "version502";
     //        public static final String initSTART = "version00";
     DrawerLayout drawer;
     ActionBarDrawerToggle toggle;
@@ -419,7 +421,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     } //askForEmail()
 
     protected static void buildCrashReport(Throwable ex) {
-        String str = Log.getStackTraceString(ex);
+        StringWriter sw = new StringWriter();
+        ex.printStackTrace(new PrintWriter(sw));
+        String str = sw.toString();
         mLog(0, "Main.buildCrashReport");
         appPrefEditor.putBoolean("appFailed", true).commit();
 //        closeActivities();
@@ -1117,6 +1121,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
 
     public void sendEmail(int idx) {
         String curFunc = "Main.sendEmail";
+        if (dialog != null) dialog.dismiss();
         mLog(0, String.format("%1$s index is %2$d", curFunc, idx));
         switch (idx) {
             case 0:
