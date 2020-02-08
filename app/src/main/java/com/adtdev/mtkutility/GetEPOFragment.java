@@ -27,6 +27,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -463,7 +464,7 @@ public class GetEPOFragment extends Fragment {
         try {
             Thread.sleep(mSec);
         } catch (InterruptedException e) {
-            Main.buildCrashReport(e);
+            Main.buildCrashReport(Log.getStackTraceString(e));
         }
     }//goSleep()
 

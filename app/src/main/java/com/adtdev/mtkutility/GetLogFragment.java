@@ -25,6 +25,7 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -46,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import android.widget.Toast;
 
@@ -63,8 +65,8 @@ public class GetLogFragment extends Fragment {
     private boolean ok = true;
     private long DLstart;
     private boolean stopBKGRND = false;
-    private final SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.US);
-    private final SimpleDateFormat fnFormatter = new SimpleDateFormat("yyyy-MM-dd-HHmmss", Locale.US);
+    private final SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.ROOT);
+    private final SimpleDateFormat fnFormatter = new SimpleDateFormat("yyyy-MM-dd-HHmmss", Locale.ROOT);
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
 
     private SharedPreferences publicPrefs;
@@ -189,7 +191,7 @@ public class GetLogFragment extends Fragment {
         try {
             Thread.sleep(mSec);
         } catch (InterruptedException e) {
-            Main.buildCrashReport(e);
+            Main.buildCrashReport(Log.getStackTraceString(e));
         }
     } //goSleep()
 
@@ -361,7 +363,7 @@ public class GetLogFragment extends Fragment {
                         bRead += binBytes.length;
                         appPrefEditor.putInt("DLcmd", offset).commit();
                     } catch (IOException e) {
-                        Main.buildCrashReport(e);
+                        Main.buildCrashReport(Log.getStackTraceString(e));
                         return null;
                     }
                     publishProgress(" ");
@@ -382,7 +384,7 @@ public class GetLogFragment extends Fragment {
             //turn on command retry again
             Main.doRetry = true;
             appPrefEditor.putInt("DLcmd", 0).commit();
-            SimpleDateFormat FDF = new SimpleDateFormat("yyyy.MM.dd.HHmmss", Locale.US);
+            SimpleDateFormat FDF = new SimpleDateFormat("yyyy.MM.dd.HHmmss", Locale.ROOT);
 
             if (binFileIsOpen) {
                 try {
@@ -435,8 +437,8 @@ public class GetLogFragment extends Fragment {
 
         private java.util.Date add1024toDate(java.util.Date oldDate) {   //dyj
             mLog(3, "MakeGPXFragment.add1024toDate()");
-            Calendar today = Calendar.getInstance();
-            Calendar newDay = Calendar.getInstance();
+            Calendar today = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            Calendar newDay = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             newDay.setTime(oldDate);
             newDay.add(Calendar.DATE, 7168); // add 7168 days
             if (newDay.after(today))
@@ -514,6 +516,7 @@ public class GetLogFragment extends Fragment {
                 }
             }
             Date mDate = new java.util.Date(utcTime * 1000);
+            fnFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
             return fnFormatter.format(add1024toDate(mDate));
         } //getFileName()
 
@@ -608,7 +611,7 @@ public class GetLogFragment extends Fragment {
 
                 return true;
             } catch (IOException e) {
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             }
             return false;
         } //BINopen()
@@ -621,7 +624,7 @@ public class GetLogFragment extends Fragment {
                     bOut.flush();
                     bOut.close();
                 } catch (IOException e) {
-                    Main.buildCrashReport(e);
+                    Main.buildCrashReport(Log.getStackTraceString(e));
                 }
             }
             binFileIsOpen = false;

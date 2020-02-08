@@ -66,6 +66,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -79,8 +80,11 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     //use to turn off Bluetooth check on vMware client
     private boolean checkBluetooth = true;
     //change veriable value to force a rebuild of the app preferences
-    public static final String initSTART = "version502";
-    //        public static final String initSTART = "version00";
+    public static final String initSTART = "version505";
+    //    public static final String initSTART = "version00";
+    private static final SimpleDateFormat csvTime = new SimpleDateFormat("mm:ss.SSS");
+    private static Date now;
+    private static String time;
     DrawerLayout drawer;
     ActionBarDrawerToggle toggle;
 
@@ -420,19 +424,15 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         alertDialog.show();
     } //askForEmail()
 
-    protected static void buildCrashReport(Throwable ex) {
-        StringWriter sw = new StringWriter();
-        ex.printStackTrace(new PrintWriter(sw));
-        String str = sw.toString();
+    protected static void buildCrashReport(String str) {
+//        String str = Log.getStackTraceString(ex);
         mLog(0, "Main.buildCrashReport");
         appPrefEditor.putBoolean("appFailed", true).commit();
-//        closeActivities();
         mLog(0, "********** Stack **********");
         mLog(999, str);
         mLog(0, "****** End of Stack ******");
         //create restart intent
         Intent intent = new Intent(mContext, Main.class);
-//        mContext.startActivity(intent);
         // make sure we die, otherwise the app will hang ...
         android.os.Process.killProcess(android.os.Process.myPid());
         System.exit(2);
@@ -541,7 +541,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         try {
             Thread.sleep(mSec);
         } catch (InterruptedException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         }
     }//goSleep()
 
@@ -574,9 +574,9 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         htmlFont = Integer.parseInt(publicPrefs.getString("htmlFont", "16"));
         AGPSsize = Integer.parseInt(publicPrefs.getString("AGPSsize", "7"));
         debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
-        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
-        epoDelay = Integer.parseInt(publicPrefs.getString("epoDelay", "200"));
-        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "300"));
+        cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "25"));
+        epoDelay = Integer.parseInt(publicPrefs.getString("epoDelay", "100"));
+        dwnDelay = Integer.parseInt(publicPrefs.getString("dwnDelay", "90"));
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
         retryInc = Integer.parseInt(publicPrefs.getString("retryInc", "0"));
         downBlockSize = Integer.parseInt(publicPrefs.getString("downBlockSize", "2048"));
@@ -647,19 +647,21 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
     protected static void mLog(int mode, String msg) {
         if (mode == ABORT) throw new RuntimeException(msg);
         if (!logFileIsOpen) return;
-        if (mode != noTrunc && mode > debugLVL) return;
-        if (mode == noTrunc && msg.length() > 127)
+        if (mode < noTrunc && mode > debugLVL) return;
+        if (mode != noTrunc && msg.length() > 127)
             msg = msg.substring(0, 60) + " ... " + msg.substring(msg.length() - 30);
 
-        String time = DateFormat.getDateTimeInstance().format(new Date());
-        time = time.substring(12);
-        time = time.replace("AM", "");
-        time = time.replace("PM", "");
+//        String time = DateFormat.getDateTimeInstance().format(new Date());
+//        time = time.substring(12);
+//        time = time.replace("AM", "");
+//        time = time.replace("PM", "");
+        now = new Date();
+        time = csvTime.format(now);
         try {
             logWriter.append(time + " " + msg + NL);
             logWriter.flush();
         } catch (IOException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         }
     }//mLog()
 
@@ -687,11 +689,14 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         if (!basePath.exists()) OK = basePath.mkdir();
 //        OK = false; //use for testing
         if (OK) {
+            appPrefEditor.putString("logFileName", logFileName);
+            appPrefEditor.putString("errFileName", errFileName);
             appPrefEditor.putString("basePath", basePath.toString()).commit();
         } else {
             errMsg = String.format(getString(R.string.makeFolderErr), basePathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
+            mLog(ABORT, errMsg);
             return;
         }
 
@@ -704,6 +709,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             errMsg = String.format(getString(R.string.makeFolderErr), gpxPathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
+            mLog(ABORT, errMsg);
             return;
         }
 
@@ -716,6 +722,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             errMsg = String.format(getString(R.string.makeFolderErr), kmlPathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
+            mLog(ABORT, errMsg);
             return;
         }
 
@@ -729,6 +736,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             errMsg = String.format(getString(R.string.makeFolderErr), csvPathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
+            mLog(ABORT, errMsg);
             return;
         }
 
@@ -741,6 +749,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             errMsg = String.format(getString(R.string.makeFolderErr), binPathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
+            mLog(ABORT, errMsg);
             return;
         }
 
@@ -753,6 +762,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             errMsg = String.format(getString(R.string.makeFolderErr), epoPathName);
             Toast.makeText(mContext, errMsg, Toast.LENGTH_LONG).show();
             aborting = true;
+            mLog(ABORT, errMsg);
         }
     }//makeSureFoldersExist
 
@@ -797,7 +807,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             lOut = new FileOutputStream(logFile);
             logFileIsOpen = true;
         } catch (IOException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         }
 
 //        logFileIsOpen = false; //use to test Log file open failure
@@ -849,14 +859,14 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             mContext = context;
         }
 
-        public void uncaughtException(Thread t, Throwable ex) {
+        public void uncaughtException(Thread t, Throwable e) {
             OK = true;
             if (!logFileIsOpen) {
                 OK = openLog();
             }
             if (OK) {
                 mLog(0, String.format("%s**** CustomExceptionHandler.uncaughtException()%s", NL, NL));
-                buildCrashReport(ex);
+                buildCrashReport(Log.getStackTraceString(e));
             }
         }
     }//class CustomExceptionHandler
@@ -965,19 +975,19 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         try {
             m = GPSdevice.getClass().getMethod(methodName, int.class);
         } catch (SecurityException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         } catch (NoSuchMethodException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         }
 
         try {
             GPSsocket = (BluetoothSocket) m.invoke(GPSdevice, Integer.valueOf(1));
         } catch (IllegalArgumentException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         } catch (IllegalAccessException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         } catch (InvocationTargetException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         }
 
         try {
@@ -989,13 +999,13 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
         try {
             GPSin = GPSsocket.getInputStream();
         } catch (IOException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         }
 
         try {
             GPSout = GPSsocket.getOutputStream();
         } catch (IOException e) {
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         }
         return GPSsocket.isConnected();
     }//connect()
@@ -1012,7 +1022,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             try {
                 GPSout.flush();
             } catch (IOException e) {
-                buildCrashReport(e);
+                buildCrashReport(Log.getStackTraceString(e));
                 return false;
             }
             GPSout = null;
@@ -1022,7 +1032,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             try {
                 GPSsocket.close();
             } catch (IOException e) {
-                buildCrashReport(e);
+                buildCrashReport(Log.getStackTraceString(e));
                 return false;
             }
             GPSsocket = null;
@@ -1100,7 +1110,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             GPSout.write(rec.toString().getBytes());
         } catch (Exception e) {
             mLog(0, String.format("%1$s CRITICAL ERROR %2$s failed", curFunc, rec.toString().substring(0, rec.length() - 2)));
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
             return false;
         }
         return true;
@@ -1224,7 +1234,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             GPSout.write(byteArray);
         } catch (Exception e) {
             mLog(0, String.format("%1$s (%2$s) failed *****", curFunc, byteArray.toString()));
-            buildCrashReport(e);
+            buildCrashReport(Log.getStackTraceString(e));
         }
     }//sendBytes()
 
@@ -1269,7 +1279,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             try {
                 bytes_available = GPSin.available();
             } catch (IOException e) {
-                buildCrashReport(e);
+                buildCrashReport(Log.getStackTraceString(e));
             }
             goSleep(delay);
 
@@ -1281,7 +1291,7 @@ public class Main extends AppCompatActivity implements NavigationView.OnNavigati
             try {
                 GPSin.read(buf);
             } catch (IOException e) {
-                buildCrashReport(e);
+                buildCrashReport(Log.getStackTraceString(e));
             }
         }
         return buf;

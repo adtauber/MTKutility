@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
@@ -90,7 +91,7 @@ public class getGPSid extends DialogFragment {
     protected void attach(Context context) {
         try{mListener = (GPSdialogListener) getTargetFragment();}
         catch (ClassCastException e){
-            Main.buildCrashReport(e);
+            Main.buildCrashReport(Log.getStackTraceString(e));
         }
     }
 }

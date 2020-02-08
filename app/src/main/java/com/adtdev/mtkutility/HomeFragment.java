@@ -26,6 +26,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -47,12 +48,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
 public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener {
 
     private static String NL = System.getProperty("line.separator");
-    SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.US);
+    SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
     private final int REQUEST_ENABLE_BT = 88;
     private static StringBuilder mText = new StringBuilder();
     private static final int TEXT_MAX_SIZE = 5120;
@@ -124,7 +124,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
 
     private File logPath;
     private File logFile;
-    private String basePathName;
+    private String basePath;
     private String logFileName;
     private static boolean logFileIsOpen;
 
@@ -145,10 +145,9 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         appPrefs = mContext.getSharedPreferences("otherprefs", Context.MODE_PRIVATE);
         appPrefEditor = appPrefs.edit();
 
-        basePathName = appPrefs.getString("basePathName", "");
+        basePath = appPrefs.getString("basePath", "");
         logFileName = appPrefs.getString("logFileName", "");
-        logPath = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), basePathName);
-        logFile = new File(logPath, logFileName);
+        logFile = new File(basePath, logFileName);
 
         cmdRetry = Integer.parseInt(publicPrefs.getString("cmdRetry", "5"));
         cmdDelay = Integer.parseInt(publicPrefs.getString("cmdDelay", "50"));
@@ -544,7 +543,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
         try {
             Thread.sleep(mSec);
         } catch (InterruptedException e) {
-            Main.buildCrashReport(e);
+            Main.buildCrashReport(Log.getStackTraceString(e));
         }
     }//goSleep()
 

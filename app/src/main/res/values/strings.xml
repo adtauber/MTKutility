@@ -188,7 +188,7 @@
     <string name="homeFont">home screen font</string>
     <string name="btnsFont">settings screen buttons font</string>
     <string name="htmlFont">settings screen table font</string>
-    <string name="AGPSsize">AGPS memory size - days</string>
+    <string name="AGPSsize">AGPS memory size (days)</string>
     <string name="debugLVL">log trace level</string>
     <string name="cmdDelay">MTK command response delay</string>
     <string name="epoDelay">EPO load send/receive delay</string>

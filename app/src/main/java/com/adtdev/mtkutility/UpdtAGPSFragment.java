@@ -25,6 +25,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,7 +45,6 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.Locale;
 
 import com.adtdev.fileChooser.FileChooser;
 
@@ -56,7 +56,7 @@ public class UpdtAGPSFragment extends Fragment {
     private static final int EPO60 = 60;
     private static final int EPO72 = 72;
     private static final int doLOCAL = 0;
-    private SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.US);
+    private SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
     private TextView tv1;
     private ScrollView mSv;
     private TextView mTv;
@@ -347,7 +347,7 @@ public class UpdtAGPSFragment extends Fragment {
         try {
             Thread.sleep(mSec);
         } catch (InterruptedException e) {
-            Main.buildCrashReport(e);
+            Main.buildCrashReport(Log.getStackTraceString(e));
         }
     }//goSleep()
 
@@ -706,7 +706,7 @@ public class UpdtAGPSFragment extends Fragment {
                 try {
                     bytes_available = Main.GPSin.available();
                 } catch (IOException e) {
-                    Main.buildCrashReport(e);
+                    Main.buildCrashReport(Log.getStackTraceString(e));
                 }
                 goSleep(timeout);
                 retry--;
@@ -716,7 +716,7 @@ public class UpdtAGPSFragment extends Fragment {
                 try {
                     Main.GPSin.read(buf);
                 } catch (IOException e) {
-                    Main.buildCrashReport(e);
+                    Main.buildCrashReport(Log.getStackTraceString(e));
                 }
             }
             mLog(1, String.format("+++ readBytes retry:%1$d  available:%2$d", retry, bytes_available));

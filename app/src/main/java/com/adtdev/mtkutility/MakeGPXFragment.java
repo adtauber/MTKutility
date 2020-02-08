@@ -20,8 +20,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.os.Handler;
@@ -31,6 +29,7 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,11 +62,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import com.adtdev.fileChooser.FileChooser;
-
 import static android.app.Activity.RESULT_OK;
-
-
-//import adtdev.com.mtkutility.R;
 
 public class MakeGPXFragment extends Fragment {
     private static final int SIZEOF_SECTOR = 0x10000;
@@ -97,7 +92,8 @@ public class MakeGPXFragment extends Fragment {
     private boolean HOLUX_M241 = false;
     private boolean M241_1_3_firmware = false;
     private static final char[] HEX_ARRAY = "0123456789ABCDEF".toCharArray();
-    private String wrkHeader = "UTC,valid,lat,lon,height,speed,heading,DSTA,DAGE,PDOP,HDOP,VDOP,sat,inuse,SID,RCR,miliSec,distance,rChk,cChk,trk,mask\n";
+    private String wrkHeader = "UTC/valid/lat/lon/height/speed/heading/DSTA/DAGE/PDOP/HDOP/VDOP/sat/" +
+            "inuse/SID/RCR/miliSec/distance/rChk/cChk/trk/mask\n";
     private String csvHeader = "TRACK,INDEX,RCR,DATE,TIME,VALID,LATITUDE,N/S,LONGITUDE,E/W,HEIGHT(m)," +
             "SPEED(km/h),HEADING,DSTA,DAGE,PDOP,HDOP,VDOP,NSAT (USED/VIEW),DISTANCE(m)," +
             "SAT INFO (SID-ELE-AZI-SNR)\n";
@@ -113,12 +109,11 @@ public class MakeGPXFragment extends Fragment {
 
     private String fileNamePrefix;
     private Date fileDate;
-//    private static final int MakeGPX = 0;
-//    private static final int MakeKML = 1;
-//    private static final int MakeCSV = 2;
-
     private static final int GPXwpt = 1;
     private static final int GPXtrk = 2;
+    private int wayRec = 0;
+    private int trkRec = 0;
+    private String sType;
     private byte[] emptyseparator = new byte[0x10];
     private boolean gpx_in_trk;
     private boolean logStoped = false;
@@ -131,7 +126,6 @@ public class MakeGPXFragment extends Fragment {
     private byte[] buffer = new byte[SIZEOF_SECTOR];
     private int count = 0;
     private java.util.Date mDate;
-//    private String sDate;
 
     private String[] cells;
     private String mLine;
@@ -167,8 +161,6 @@ public class MakeGPXFragment extends Fragment {
     private byte rChecksum = 0;
     private String tmpString;
     private String formattedDate;
-    private int wayRec = 0;
-    private int trkRec = 1;
     private int linesOut = 0;
     private String savedTrk = "0";
     private long lastUTC;
@@ -228,7 +220,7 @@ public class MakeGPXFragment extends Fragment {
     public static final String CHANGE_DIALOG = "changeDialog";
 
     private String wF = "/trackpoints.csv";
-    private File wrkFile;
+    private File wrkFile, HwrkFile, MwrkFile;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -238,9 +230,6 @@ public class MakeGPXFragment extends Fragment {
         publicPrefEditor = publicPrefs.edit();
         appPrefs = mContext.getSharedPreferences("otherprefs", Context.MODE_PRIVATE);
         appPrefEditor = appPrefs.edit();
-
-        wrkFile = new File(mContext.getFilesDir(), wF);
-//        wrkFile = new File(appPrefs.getString("basePath", ""), wF);
 
         rootView = inflater.inflate(R.layout.makegpx, container, false);
         fileName = rootView.findViewById(R.id.fileName);
@@ -303,7 +292,7 @@ public class MakeGPXFragment extends Fragment {
         makeCSV.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mLog(0, "*** MakeGPXFragment.onCreateView() *** button " + makeGPX.getText() + " pressed");
+                mLog(0, "*** MakeGPXFragment.onCreateView() *** button " + makeCSV.getText() + " pressed");
                 new MakeGPXFragment.makeCSV(getActivity()).execute();
             }
         });
@@ -313,7 +302,6 @@ public class MakeGPXFragment extends Fragment {
 
     public void onViewCreated(View view, Bundle savedInstanceState) {
         mLog(0, "MakeGPXFragment.onViewCreated()");
-        debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
         makeGPX.setEnabled(false);
         makeKML.setEnabled(false);
         makeCSV.setEnabled(false);
@@ -335,6 +323,7 @@ public class MakeGPXFragment extends Fragment {
 
     // Listen for results.
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mLog(0, "MakeGPXFragment.onActivityResult()");
         // See which child activity is calling us back.
         if (requestCode == REQUEST_PATH) {
             if (resultCode == RESULT_OK) {
@@ -353,8 +342,8 @@ public class MakeGPXFragment extends Fragment {
 
     private java.util.Date add1024toDate(java.util.Date oldDate) {   //dyj
         mLog(3, "MakeGPXFragment.add1024toDate()");
-        Calendar today = Calendar.getInstance();
-        Calendar newDay = Calendar.getInstance();
+        Calendar today = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        Calendar newDay = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
         newDay.setTime(oldDate);
         newDay.add(Calendar.DATE, 7168); // add 7168 days
         if (newDay.after(today))
@@ -385,7 +374,7 @@ public class MakeGPXFragment extends Fragment {
         } catch (IOException e) {
             mLog(0, "**** wrkFileWriter.write() failed");
 //            ReaderClose();
-            Main.buildCrashReport(e);
+            Main.buildCrashReport(Log.getStackTraceString(e));
         }
     } //fileWriter()
 
@@ -404,6 +393,7 @@ public class MakeGPXFragment extends Fragment {
     } //getfile()
 
     private String getGPXend(int type) {
+        mLog(3, "MakeGPXFragment.getGPXend()");
         if (type == GPXwpt) {
             return in2 + "</wpt>\n";
         } else {
@@ -411,7 +401,46 @@ public class MakeGPXFragment extends Fragment {
         }
     } //getGPXend()
 
+    private String getKMLstamp(short rcr) {
+        mLog(3, "MakeGPXFragment.getRecNum()");
+        switch (rcr) {
+            case 1:
+                return "TimeStamp";
+            case 2:
+                return "SpeedStamp";
+            case 3:
+                return "MixStamp";
+            case 4:
+                return "DistanceStamp";
+            case 5:
+                return "MixStamp";
+            case 6:
+                return "MixStamp";
+            case 7:
+                return "MixStamp";
+            case 8:
+                return "ButtonStamp";
+            case 9:
+                return "MixStamp";
+            case 10:
+                return "MixStamp";
+            case 11:
+                return "MixStamp";
+            case 12:
+                return "MixStamp";
+            case 13:
+                return "MixStamp";
+            case 14:
+                return "MixStamp";
+            case 15:
+                return "MixStamp";
+            default:
+                return "invalid";
+        }
+    } //getRCRs()
+
     private String getRCRs(short rcr) {
+        mLog(3, "MakeGPXFragment.getRecNum()");
         switch (rcr) {
             case 1:
                 return "T";
@@ -452,10 +481,10 @@ public class MakeGPXFragment extends Fragment {
         mLog(3, "MakeGPXFragment.getRecNum()");
         if (type == GPXwpt) {
             wayRec++;
-            return "WP" + String.format("%07d", wayRec);
+            return "WP" + String.format(Locale.US, "%07d", wayRec);
         } else {
             trkRec++;
-            return "TP" + String.format("%07d", trkRec);
+            return "TP" + String.format(Locale.US, "%07d", trkRec);
         }
     } //getRecNum()
 
@@ -482,11 +511,11 @@ public class MakeGPXFragment extends Fragment {
     } //getValid()
 
     public void goSleep(int mSec) {
-        mLog(3, String.format("MakeGPXFragment.goSleep(%d)", mSec));
+        mLog(3, String.format(Locale.US, "MakeGPXFragment.goSleep(%d)", mSec));
         try {
             Thread.sleep(mSec);
         } catch (InterruptedException e) {
-            Main.buildCrashReport(e);
+            Main.buildCrashReport(Log.getStackTraceString(e));
         }
     } //goSleep()
 
@@ -538,12 +567,22 @@ public class MakeGPXFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             mLog(1, "MakeGPXFragment.makeWrkFile.onPreExecute()");
+            debugLVL = Integer.parseInt(publicPrefs.getString("debugLVL", "0"));
             dialog = new ProgressDialog(lContext);
             dialog.setCancelable(true);
             dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             dialog.setMax(100);
             dialog.setTitle(getString(R.string.readBIN));
             dialog.show();
+
+            HwrkFile = new File(mContext.getFilesDir(), wF);
+            MwrkFile = new File(appPrefs.getString("basePath", ""), wF);
+            if (debugLVL > 0) {
+                wrkFile = MwrkFile;
+            } else {
+                if (MwrkFile.exists()) MwrkFile.delete();
+                wrkFile = HwrkFile;
+            }
         } //onPreExecute()
 
         @Override
@@ -551,7 +590,7 @@ public class MakeGPXFragment extends Fragment {
             mLog(1, "MakeGPXFragment.makeWrkFile.doInBackground()");
             // Open an input stream for reading from the binary Log
             bin_file = new File(binPath);
-            mLog(1, String.format("Reading bin file: %s", bin_file.toString()));
+            mLog(1, String.format(Locale.US, "Reading bin file: %s", bin_file.toString()));
             mLog(1, "creating work file: " + wrkFile.toString());
 
             FileWriter mFileWriter;
@@ -564,7 +603,7 @@ public class MakeGPXFragment extends Fragment {
                 BinToCSVconvert();
             } catch (IOException e) {
                 mLog(0, "**** csv pass failed");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             }
             // Close files
             try {
@@ -574,7 +613,7 @@ public class MakeGPXFragment extends Fragment {
                 mReader.close();
             } catch (IOException e) {
                 mLog(0, "**** makeWrkFile.doInBackground() IOException-files close");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             }
             csvLength = wrkFile.length();
             return null;
@@ -609,7 +648,8 @@ public class MakeGPXFragment extends Fragment {
 
                 formatMask = buf.getInt(2);
                 BinSectorParse(buf);
-                mLog(2, String.format("processed %d of %d bytes", totalBytes, binLength));
+                mLog(2, String.format(Locale.US, "processed %d of %d bytes",
+                        totalBytes, binLength));
 
                 if (bytes_in_sector < SIZEOF_SECTOR) {
                     // Reached the end of the file or something is wrong
@@ -656,15 +696,15 @@ public class MakeGPXFragment extends Fragment {
                         tmp[14] == (byte) 0xBB && tmp[15] == (byte) 0xBB) {
                     // So we found a record separator..
                     byte separator_type = tmp[7];
-                    mLog(2, String.format("Record separator %s", bytesToHex(tmp)));
+                    mLog(2, String.format(Locale.US, "Record separator %s", bytesToHex(tmp)));
                     //skip record when log is stopped - look for log start separator
                     if (tmp[7] == 0x07 && tmp[8] == 0x04) {
                         logStoped = true;
-                        mLog(1, String.format("logStoped %b", logStoped));
+                        mLog(2, String.format(Locale.US, "logStoped %b", logStoped));
                     }
                     if (tmp[7] == 0x07 && tmp[8] == 0x06) {
                         logStoped = false;
-                        mLog(1, String.format("logStoped %b", logStoped));
+                        mLog(2, String.format(Locale.US, "logStoped %b", logStoped));
                     }
                     if (!cbxone && gpx_in_trk && tmp[7] == 0x07 && tmp[8] == 0x06) {
                         //log start separator found - start a new track
@@ -679,7 +719,7 @@ public class MakeGPXFragment extends Fragment {
                     if (separator_type == 0x02) {
                         formatMask = buf.getInt();
                         buf.position(buf.position() + 4);
-                        mLog(2, String.format("Log format has changed to %x", formatMask));
+                        mLog(2, String.format(Locale.US, "Log format has changed to %x", formatMask));
                     } else {
                         buf.position(buf.position() + 8);
                     }
@@ -701,8 +741,6 @@ public class MakeGPXFragment extends Fragment {
                     continue;
                 } else if (Arrays.equals(tmp, emptyseparator)) {
                     mLog(2, "Empty space, assume end of log");
-                    //clear bytes_in_sector to exit BinToCSVconvert loop
-//                    bytes_in_sector = 0;
                     break;
 
                 } else {
@@ -727,18 +765,18 @@ public class MakeGPXFragment extends Fragment {
                 if ((formatMask & FORMAT_UTC) == FORMAT_UTC) {
                     bytesRead += 4;
                     utcTime = buf.getInt();
-                    csvLine.append(String.format("%d", utcTime));
+                    csvLine.append(String.format(Locale.US, "%d", utcTime));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 valid = 0;
                 if ((formatMask & FORMAT_VALID) == FORMAT_VALID) {
                     bytesRead += 2;
                     valid = buf.getShort();
                 }
-                csvLine.append(String.format("%d", valid)); //fix)
+                csvLine.append(String.format(Locale.US, "%d", valid)); //fix)
 
-                csvLine.append(",");
+                csvLine.append("/");
                 lat = 0;
                 if ((formatMask & FORMAT_LATITUDE) == FORMAT_LATITUDE) {
                     if (HOLUX_M241) {
@@ -748,11 +786,11 @@ public class MakeGPXFragment extends Fragment {
                         bytesRead += 8;
                         lat = buf.getDouble();
                     }
-                    csvLine.append(String.format("%.9f", lat));
+                    csvLine.append(String.format(Locale.US, "%.9f", lat));
                 }
 
                 lon = 0;
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_LONGITUDE) == FORMAT_LONGITUDE) {
                     if (HOLUX_M241) {
                         bytesRead += 4;
@@ -761,10 +799,10 @@ public class MakeGPXFragment extends Fragment {
                         bytesRead += 8;
                         lon = buf.getDouble();
                     }
-                    csvLine.append(String.format("%.9f", lon));
+                    csvLine.append(String.format(Locale.US, "%.9f", lon));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_HEIGHT) == FORMAT_HEIGHT) {
                     if (HOLUX_M241) {
                         bytesRead += 3;
@@ -777,7 +815,7 @@ public class MakeGPXFragment extends Fragment {
                         bytesRead += 4;
                         height = buf.getFloat();
                     }
-                    csvLine.append(String.format("%.9f", height));
+                    csvLine.append(String.format(Locale.US, "%.9f", height));
                 }
 
                 if (M241_1_3_firmware) {
@@ -785,7 +823,7 @@ public class MakeGPXFragment extends Fragment {
                     rChecksum = buf.get();
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_SPEED) == FORMAT_SPEED) {
                     bytesRead += 4;
                     if (M241_1_3_firmware) {
@@ -798,64 +836,64 @@ public class MakeGPXFragment extends Fragment {
                     } else {
                         speed = buf.getFloat() / 3.6f;
                     }
-                    csvLine.append(String.format("%.6f", speed));
+                    csvLine.append(String.format(Locale.US, "%.6f", speed));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_HEADING) == FORMAT_HEADING) {
                     bytesRead += 4;
                     heading = buf.getFloat();
-                    csvLine.append(String.format("%.6f", heading));
+                    csvLine.append(String.format(Locale.US, "%.6f", heading));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_DSTA) == FORMAT_DSTA) {
                     bytesRead += 2;
                     dsta = buf.getShort();
-                    csvLine.append(String.format("%d", dsta));
+                    csvLine.append(String.format(Locale.US, "%d", dsta));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_DAGE) == FORMAT_DAGE) {
                     bytesRead += 4;
                     dage = buf.getInt();
-                    csvLine.append(String.format("%d", dage));
+                    csvLine.append(String.format(Locale.US, "%d", dage));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_PDOP) == FORMAT_PDOP) {
                     bytesRead += 2;
                     pdop = buf.getShort();
-                    csvLine.append(String.format("%d", pdop));
+                    csvLine.append(String.format(Locale.US, "%d", pdop));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_HDOP) == FORMAT_HDOP) {
                     bytesRead += 2;
                     hdop = buf.getShort();
-                    csvLine.append(String.format("%d", hdop));
+                    csvLine.append(String.format(Locale.US, "%d", hdop));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_VDOP) == FORMAT_VDOP) {
                     bytesRead += 2;
                     vdop = buf.getShort();
-                    csvLine.append(String.format("%d", vdop));
+                    csvLine.append(String.format(Locale.US, "%d", vdop));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_NSAT) == FORMAT_NSAT) {
                     bytesRead += 2;
                     nsat = buf.get();
                     nsatInuse = buf.get();
-                    csvLine.append(String.format("%d", nsat));
-                    csvLine.append(",");
-                    csvLine.append(String.format("%d", nsatInuse));
+                    csvLine.append(String.format(Locale.US, "%d", nsat));
+                    csvLine.append("/");
+                    csvLine.append(String.format(Locale.US, "%d", nsatInuse));
                 } else {
-                    csvLine.append(",");
+                    csvLine.append("/");
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 boolean doSID = false;
                 if ((formatMask & FORMAT_SID) == FORMAT_SID) {
                     // Large section to parse
@@ -867,7 +905,7 @@ public class MakeGPXFragment extends Fragment {
                         satAzimuth = "";
                         satSNR = "";
                         bytesRead += 1;
-                        SID = String.format("#%d", buf.get());
+                        SID = String.format(Locale.US, "#%d", buf.get());
                         bytesRead += 1;
                         byte satdataInuse = buf.get();
                         bytesRead += 2;
@@ -876,15 +914,15 @@ public class MakeGPXFragment extends Fragment {
                             doSID = true;
                             if ((formatMask & FORMAT_ELEVATION) == FORMAT_ELEVATION) {
                                 bytesRead += 2;
-                                satElevation = String.format("%s", Short.toString(buf.getShort()));
+                                satElevation = String.format(Locale.US, "%s", Short.toString(buf.getShort()));
                             }
                             if ((formatMask & FORMAT_AZIMUTH) == FORMAT_AZIMUTH) {
                                 bytesRead += 2;
-                                satAzimuth = String.format("%s", Short.toString(buf.getShort()));
+                                satAzimuth = String.format(Locale.US, "%s", Short.toString(buf.getShort()));
                             }
                             if ((formatMask & FORMAT_SNR) == FORMAT_SNR) {
                                 bytesRead += 2;
-                                satSNR = String.format("%s", Short.toString(buf.getShort()));
+                                satSNR = String.format(Locale.US, "%s", Short.toString(buf.getShort()));
                             }
                             //#05-18-280-22
                             satCount++;
@@ -900,26 +938,26 @@ public class MakeGPXFragment extends Fragment {
                     }
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 rcr = 0;
                 if ((formatMask & FORMAT_RCR) == FORMAT_RCR) {
                     bytesRead += 2;
                     rcr = buf.getShort();
                 }
-                csvLine.append(String.format("%d", rcr));
+                csvLine.append(String.format(Locale.US, "%d", rcr));
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_MILLISECOND) == FORMAT_MILLISECOND) {
                     bytesRead += 2;
                     millisecond = buf.getShort();
-                    csvLine.append(String.format("%d", millisecond));
+                    csvLine.append(String.format(Locale.US, "%d", millisecond));
                 }
 
-                csvLine.append(",");
+                csvLine.append("/");
                 if ((formatMask & FORMAT_DISTANCE) == FORMAT_DISTANCE) {
                     bytesRead += 8;
                     distance = buf.getDouble();
-                    csvLine.append(String.format("%.6f", distance));
+                    csvLine.append(String.format(Locale.US, "%.6f", distance));
                 }
 
                 record++;
@@ -942,17 +980,17 @@ public class MakeGPXFragment extends Fragment {
                 }
                 sectorBytes += bytesRead;
                 totalBytes += bytesRead;
-                csvLine.append(",");
-                csvLine.append(String.format("%d", rChecksum));
+                csvLine.append("/");
+                csvLine.append(String.format(Locale.US, "%d", rChecksum));
 
-                csvLine.append(",");
-                csvLine.append(String.format("%d", cChecksum));
+                csvLine.append("/");
+                csvLine.append(String.format(Locale.US, "%d", cChecksum));
 
-                csvLine.append(",");
-                csvLine.append(String.format("%d", gpx_trk_number));
+                csvLine.append("/");
+                csvLine.append(String.format(Locale.US, "%d", gpx_trk_number));
 
-                csvLine.append(",");
-                csvLine.append(String.format("%d", formatMask));
+                csvLine.append("/");
+                csvLine.append(String.format(Locale.US, "%d", formatMask));
 
                 //save date for file name
                 if (record == 1) {
@@ -963,7 +1001,7 @@ public class MakeGPXFragment extends Fragment {
                 pct = (int) ((totalBytes * 100) / binLength);
                 if (pct > 100) pct = 100;
                 dialog.setProgress(pct);
-                mLog(3, String.format("bytesRead %d Checksum %x read cChecksum %x",
+                mLog(3, String.format(Locale.US, "bytesRead %d Checksum %x read cChecksum %x",
                         bytesRead, cChecksum, rChecksum));
 
                 if (valid > 1024) {
@@ -986,13 +1024,13 @@ public class MakeGPXFragment extends Fragment {
         private int trksecs;
 
         public makeGPX(Context context) {
-            mLog(2, "MakeGPXFragment.makeGPX.makeGPX()");
+            mLog(0, "MakeGPXFragment.makeGPX.makeGPX()");
             lContext = context;
         } //makeGPX()
 
         @Override
         protected void onPreExecute() {
-            mLog(2, "MakeGPXFragment.makeGPX.onPreExecute()");
+            mLog(0, "MakeGPXFragment.makeGPX.onPreExecute()");
             trksecs = appPrefs.getInt("trkSecs", 0);
             if (trksecs > 0) trksecs = trksecs * 60;
             dialog = new ProgressDialog(lContext);
@@ -1007,18 +1045,18 @@ public class MakeGPXFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... params) {
-            mLog(2, "MakeGPXFragment.makeGPX.doInBackground()");
+            mLog(0, "MakeGPXFragment.makeGPX.doInBackground()");
             // Open an output for writing the gpx file
             String gpxName = fileNamePrefix + ".gpx"; // - date from first record in file
             gpxFile = new File(appPrefs.getString("gpxPath", ""), gpxName);
-            mLog(1, "Creating GPX file: " + gpxFile.toString());
+            mLog(0, "Creating GPX file: " + gpxFile.toString());
             FileWriter mFileWriter;
             try {
                 mFileWriter = new FileWriter(gpxFile);
                 mWriter = new BufferedWriter(mFileWriter, SIZEOF_SECTOR / 8);
             } catch (IOException e) {
                 mLog(0, "**** makeGPX.doInBackground() IOException-mWriter create");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             }
             bytesRead = 0;
             writeHeader();
@@ -1035,15 +1073,14 @@ public class MakeGPXFragment extends Fragment {
                 mReader.close();
             } catch (IOException e) {
                 mLog(0, "**** makeGPX.doInBackground() IOException-files close");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             }
             return null;
         } //doInBackground()
 
         @Override
         protected void onPostExecute(Void param) {
-            mLog(2, "MakeGPXFragment.makeGPX.onPostExecute()");
-//            goSleep(2000);
+            mLog(0, "MakeGPXFragment.makeGPX.onPostExecute()");
             if (dialog.isShowing()) dialog.dismiss();
             mTv.append("created: " + gpxFile.toString() + "\n");
             scrollDown();
@@ -1057,7 +1094,7 @@ public class MakeGPXFragment extends Fragment {
         } //onProgressUpdate
 
         private void writeHeader() {
-            mLog(2, "MakeGPXFragment.makeGPX.writeHeader()");
+            mLog(0, "MakeGPXFragment.makeGPX.writeHeader()");
             fileWriter("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n");
             fileWriter("<gpx\n");
             fileWriter("    version=\"1.1\"\n");
@@ -1069,7 +1106,8 @@ public class MakeGPXFragment extends Fragment {
         } //writeHeader()
 
         private void writeGPXfile(int type) {
-            mLog(2, "MakeGPXFragment.makeGPX.writeGPXfile()");
+            sType = (type == GPXwpt) ? "GPXwpt" : "GPXtrk";
+            mLog(0, String.format(Locale.US, "MakeGPXFragment.makeGPX.writeGPXfile(%s)", sType));
             reader = null;
             try {
                 reader = new BufferedReader(new FileReader(wrkFile));
@@ -1082,26 +1120,27 @@ public class MakeGPXFragment extends Fragment {
                 }
             } catch (FileNotFoundException e) {
                 mLog(0, "**** makeGPX.writeGPXfile() FileNotFoundException-reader pass");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             } catch (IOException e) {
                 mLog(0, "**** makeGPX.writeGPXfile() IOException-reader pass");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             } finally {
                 try {
                     if (reader != null) reader.close();
                 } catch (IOException e) {
                     mLog(0, "**** makeGPX.writeGPXfile() IOException-reader.close");
-                    Main.buildCrashReport(e);
+                    Main.buildCrashReport(Log.getStackTraceString(e));
                 }
             }
         } //writeGPXfile()
 
         private void writeGPXline(int type, String csv) {
-            mLog(3, "MakeGPXFragment.makeGPX.writeGPXline()");
+            sType = (type == GPXwpt) ? "GPXwpt" : "GPXtrk";
+            mLog(2, String.format(Locale.US, "MakeGPXFragment.makeGPX.writeGPXline(%s)", sType));
             if (csv.contains("UTC")) return;
 //UTC,valid,lat,lon,height,speed,heading,DSTA,DAGE,PDOP,HDOP,VDOP,sat,inuse,SID,RCR,miliSec,distance,rChk,cChk,trk,mask
 // 0 ,  1  , 2 , 3 ,  4   ,  5  ,   6   , 7  , 8  , 9  , 10 , 11 , 12, 13  , 14, 15,  16   ,   17   , 18 , 19 , 20, 21
-            cells = csv.split(",");
+            cells = csv.split("/");
             valid = Short.parseShort(cells[1]);
             rcr = Short.parseShort(cells[15]);
             if (type == GPXwpt && !getRCRs(rcr).contains("B")) return;
@@ -1112,6 +1151,8 @@ public class MakeGPXFragment extends Fragment {
             if (lat == 0 || lon == 0) return;
             //make sure record has a good checksum
             if (!cells[18].equals(cells[19])) return;
+
+            mLog(1, sType + "-" + linesOut + "- " + csv);
             if (!cbxone) {
                 String newTrk = cells[20];
                 if (type == GPXtrk && !newTrk.equals(savedTrk)) {
@@ -1133,22 +1174,22 @@ public class MakeGPXFragment extends Fragment {
             lastUTC = utcTime;
             writeLatLong(type, cells[2], cells[3], cells[4], utcTime);
             if ((formatMask & FORMAT_HEADING) == FORMAT_HEADING) fileWriter(
-                    String.format("%s<course>%s</course>\n", in3, cells[6]));
+                    String.format(Locale.US, "%s<course>%s</course>\n", in3, cells[6]));
             if ((formatMask & FORMAT_SPEED) == FORMAT_SPEED) fileWriter(
                     String.format("%s<speed>%s</speed>\n", in3, cells[5]));
-            fileWriter(String.format("%s<name>%s</name>\n", in3, getRecNum(type)));
+            fileWriter(String.format(Locale.US, "%s<name>%s</name>\n", in3, getRecNum(type)));
             if ((formatMask & FORMAT_RCR) == FORMAT_RCR) fileWriter(
-                    String.format("%s<type>%s</type>\n", in3, getRCRs(rcr)));
+                    String.format(Locale.US, "%s<type>%s</type>\n", in3, getRCRs(rcr)));
             if ((formatMask & FORMAT_VALID) == FORMAT_VALID) fileWriter(
-                    String.format("%s<fix>%s</fix>\n", in3, getValid(valid)));
+                    String.format(Locale.US, "%s<fix>%s</fix>\n", in3, getValid(valid)));
             if ((formatMask & FORMAT_NSAT) == FORMAT_NSAT) fileWriter(
-                    String.format("%s<sat>%s</sat>\n", in3, cells[13]));
+                    String.format(Locale.US, "%s<sat>%s</sat>\n", in3, cells[13]));
             if ((formatMask & FORMAT_HDOP) == FORMAT_HDOP) fileWriter(
-                    String.format("%s<hdop>%.6f</hdop>\n", in3, Float.parseFloat(cells[10]) / 100));
+                    String.format(Locale.US, "%s<hdop>%.6f</hdop>\n", in3, Float.parseFloat(cells[10]) / 100));
             if ((formatMask & FORMAT_PDOP) == FORMAT_PDOP) fileWriter(
-                    String.format("%s<pdop>%.6f</pdop>\n", in3, Float.parseFloat(cells[9]) / 100));
+                    String.format(Locale.US, "%s<pdop>%.6f</pdop>\n", in3, Float.parseFloat(cells[9]) / 100));
             if ((formatMask & FORMAT_VDOP) == FORMAT_VDOP) fileWriter(
-                    String.format("%s<vdop>%.6f</vdop>\n", in3, Float.parseFloat(cells[11]) / 100));
+                    String.format(Locale.US, "%s<vdop>%.6f</vdop>\n", in3, Float.parseFloat(cells[11]) / 100));
             fileWriter(getGPXend(type));
             linesOut++;
         } //writeGPXline()
@@ -1157,23 +1198,23 @@ public class MakeGPXFragment extends Fragment {
             mLog(3, "MakeGPXFragment.makeGPX.writeLatLong()");
             mDate = new java.util.Date(date * 1000);
             formattedDate = formatter.format(add1024toDate(mDate));    //dyj
-            mLog(3, String.format("formattedDate %s", formattedDate));
+            mLog(3, String.format(Locale.US, "formattedDate %s", formattedDate));
             if (type == GPXwpt) {
-                fileWriter(String.format("%s<wpt lat=\"%s\" lon=\"%s\">\n", in2, lat, lon));
+                fileWriter(String.format(Locale.US, "%s<wpt lat=\"%s\" lon=\"%s\">\n", in2, lat, lon));
             } else {
-                fileWriter(String.format("%s<trkpt lat=\"%s\" lon=\"%s\">\n", in2, lat, lon));
+                fileWriter(String.format(Locale.US, "%s<trkpt lat=\"%s\" lon=\"%s\">\n", in2, lat, lon));
             }
-            fileWriter(String.format("%s<ele>%s</ele>\n", in3, height));
-            fileWriter(String.format("%s<time>%s</time>\n", in3, formattedDate));
+            fileWriter(String.format(Locale.US, "%s<ele>%s</ele>\n", in3, height));
+            fileWriter(String.format(Locale.US, "%s<time>%s</time>\n", in3, formattedDate));
         } //writeLatLong()
 
         private void writeTrkBgn(String newTrk, long time) {
             mLog(2, "MakeGPXFragment.makeGPX.writeTrkBgn()");
-            mLog(2, String.format("linesOut =%d", linesOut));
             Date mDate = new java.util.Date(time * 1000);
             formattedDate = tnFormatter.format(add1024toDate(mDate));    //dyj
+            if (Integer.parseInt(newTrk) > 1) fileWriter(in1 + "</trkseg>\n</trk>\n");
             String s = "<trk>\n" + "   <name>%s</name>\n" + "   <number>%s</number>\n" + in1 + "<trkseg>\n";
-            fileWriter(String.format(s, formattedDate, newTrk));
+            fileWriter(String.format(Locale.US, s, formattedDate, newTrk));
         } //writeTrkBgn()
 
     } //class makeGPX
@@ -1184,13 +1225,13 @@ public class MakeGPXFragment extends Fragment {
         private int trksecs;
 
         public makeKML(Context context) {
-            mLog(2, "MakeGPXFragment.makeKML.makeKML()");
+            mLog(0, "MakeGPXFragment.makeKML.makeKML()");
             lContext = context;
         } //makeGPX()
 
         @Override
         protected void onPreExecute() {
-            mLog(2, "MakeGPXFragment.makeKML.onPreExecute()");
+            mLog(0, "MakeGPXFragment.makeKML.onPreExecute()");
             trksecs = appPrefs.getInt("trkSecs", 0);
             dialog = new ProgressDialog(lContext);
             dialog.setCancelable(true);
@@ -1204,7 +1245,7 @@ public class MakeGPXFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... params) {
-            mLog(2, "MakeGPXFragment.makeKML.doInBackground()");
+            mLog(0, "MakeGPXFragment.makeKML.doInBackground()");
             // Open an output for writing the kml file
             String kmlPath = fileNamePrefix + ".kml"; // - date from first record in file
             kmlFile = new File(appPrefs.getString("kmlPath", ""), kmlPath);
@@ -1215,7 +1256,7 @@ public class MakeGPXFragment extends Fragment {
                 mWriter = new BufferedWriter(mFileWriter, SIZEOF_SECTOR / 8);
             } catch (IOException e) {
                 mLog(0, "**** makeKML.doInBackground() IOException-mWriter create");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             }
             bytesRead = 0;
             //copy XML style boilerplate
@@ -1228,15 +1269,17 @@ public class MakeGPXFragment extends Fragment {
             fileWriter(in1 + "<open>0</open>\n");
 
             //way point Placemarks pass
-            trkPointPass(wayRec);
+            trkPointPass(GPXwpt);
 
             fileWriter("</Folder>\n");
             fileWriter("<Folder>\n");
             fileWriter(in1 + "<name>My Tracks</name>\n");
             fileWriter(in1 + "<open>0</open>\n");
             tmpString = fileNamePrefix.substring(0, 10);
-            fileWriter(in2 + String.format("<name>TRACK-%s</name>\n", tmpString.replace("-", "")));
-            fileWriter(in1 + String.format("<Placemark><name>%s</name>\n", wpFormatter.format(fileDate)));
+            fileWriter(in2 + String.format(Locale.US, "<name>TRACK-%s</name>\n",
+                    tmpString.replace("-", "")));
+            fileWriter(in1 + String.format(Locale.US, "<Placemark><name>%s</name>\n",
+                    wpFormatter.format(fileDate)));
             fileWriter(in2 + "<Style>\n");
             fileWriter(in3 + "<LineStyle>\n");
             fileWriter(in4 + "<color>ffFF0000</color>\n");
@@ -1259,11 +1302,12 @@ public class MakeGPXFragment extends Fragment {
             fileWriter(in1 + "<name>My Trackpoints</name>\n");
             fileWriter(in1 + "<Folder>\n");
             tmpString = fileNamePrefix.substring(0, 10);
-            fileWriter(in2 + String.format("<name>Trackpoints-%s</name>\n", tmpString.replace("-", "")));
+            fileWriter(in2 + String.format(Locale.US, "<name>Trackpoints-%s</name>\n",
+                    tmpString.replace("-", "")));
             fileWriter(in2 + "<open>0</open>\n");
 
             //track point Placemarks pass
-            trkPointPass(trkRec);
+            trkPointPass(GPXtrk);
 
             fileWriter(in1 + "</Folder>\n</Folder>\n\n</Document>\n</kml>");
             return null;
@@ -1271,7 +1315,7 @@ public class MakeGPXFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Void param) {
-            mLog(2, "MakeGPXFragment.makeKML.onPostExecute()");
+            mLog(0, "MakeGPXFragment.makeKML.onPostExecute()");
             if (dialog.isShowing()) dialog.dismiss();
             mTv.append("created: " + kmlFile.toString() + "\n");
             scrollDown();
@@ -1279,7 +1323,7 @@ public class MakeGPXFragment extends Fragment {
         } //onPostExecute()
 
         private void StyleMapPass() {
-            mLog(2, "MakeGPXFragment.makeKML.StyleMapPass()");
+            mLog(0, "MakeGPXFragment.makeKML.StyleMapPass()");
             reader = null;
             linesOut = 0;
             try {
@@ -1290,7 +1334,7 @@ public class MakeGPXFragment extends Fragment {
                     linesOut++;
                     bytesRead += mLine.length();
                     if (linesOut == 4)
-                        fileWriter(String.format("<name>%s</name>\n", fileNamePrefix));
+                        fileWriter(String.format(Locale.US, "<name>%s</name>\n", fileNamePrefix));
                     fileWriter(mLine + "\n");
                     pct = (int) ((bytesRead * 100) / bytesToRead);
                     if (pct > 100) pct = 100;
@@ -1298,20 +1342,20 @@ public class MakeGPXFragment extends Fragment {
                 }
             } catch (IOException e) {
                 mLog(0, "**** makeKML.StyleMapPass() IOException-reader loop");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             } finally {
                 try {
                     if (reader != null) reader.close();
                 } catch (IOException e) {
                     mLog(0, "**** makeKML.StyleMapPass() IOException-reader.close");
-                    Main.buildCrashReport(e);
+                    Main.buildCrashReport(Log.getStackTraceString(e));
                 }
             }
         } //StyleMapPass()
 
         private void trkPointPass(int type) {
-            String sType = (type == wayRec) ? "wayRec" : "trkRec";
-            mLog(2, String.format("MakeGPXFragment.makeKML.trkPointPass(%s)", sType));
+            sType = (type == GPXwpt) ? "GPXwpt" : "GPXtrk";
+            mLog(0, String.format(Locale.US, "MakeGPXFragment.makeKML.trkPointPass(%s)", sType));
             reader = null;
             linesOut = 0;
             count = 0;
@@ -1329,31 +1373,31 @@ public class MakeGPXFragment extends Fragment {
                 if (count > 0) fileWriter(in1 + "</Folder>\n");
             } catch (FileNotFoundException e) {
                 mLog(0, "**** makeKML.WayPointPass() FileNotFoundException-reader pass");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             } catch (IOException e) {
                 mLog(0, "**** makeKML.WayPointPass() IOException-reader pass");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             } finally {
                 try {
-//                    if (reader != null) reader.close();
                     reader.close();
                 } catch (IOException e) {
                     mLog(0, "**** makeGPX.WayPointPass() IOException-reader.close");
-                    Main.buildCrashReport(e);
+                    Main.buildCrashReport(Log.getStackTraceString(e));
                 }
             }
         } //WayPointPass()
 
         private void trkRecLine(int type, String csv) {
+            sType = (type == GPXwpt) ? "GPXwpt" : "GPXtrk";
+            mLog(2, String.format(Locale.US, "MakeGPXFragment.makeKML.trkRecLine(%s)", sType));
             if (csv.contains("UTC")) return;
-            String sType = (type == wayRec) ? "wayRec" : "trkRec";
-            mLog(3, String.format("MakeGPXFragment.makeKML.trkRecLine(%s)", sType));
 //UTC,valid,lat,lon,height,speed,heading,DSTA,DAGE,PDOP,HDOP,VDOP,sat,inuse,SID,RCR,miliSec,distance,rChk,cChk,trk,mask
 // 0 ,  1  , 2 , 3 ,  4   ,  5  ,   6   , 7  , 8  , 9  , 10 , 11 , 12, 13  , 14, 15,  16   ,   17   , 18 , 19 , 20, 21
-            cells = csv.split(",");
+            mLog(1, sType + "-" + linesOut + "- " + csv);
+            cells = csv.split("/");
             valid = Short.parseShort(cells[1]);
             rcr = Short.parseShort(cells[15]);
-            if (type == wayRec && !getRCRs(rcr).contains("B")) return;
+            if (type == GPXwpt && !getRCRs(rcr).contains("B")) return;
             if (valid == 1 || rcr > 16) return;
             lat = Double.parseDouble(cells[2]);
             lon = Double.parseDouble(cells[3]);
@@ -1361,33 +1405,44 @@ public class MakeGPXFragment extends Fragment {
             utcTime = Long.parseLong(cells[0]);
             mDate = new java.util.Date(utcTime * 1000);
             if (count == 0) {
-                fileWriter(in1 + String.format("<Folder><name>%s</name>\n", dateFormatter.format(add1024toDate(mDate))));
+                fileWriter(in1 + String.format(Locale.US, "<Folder><name>%s</name>\n",
+                        dateFormatter.format(add1024toDate(mDate))));
             }
             count++;
             fileWriter(in2 + "<Placemark>\n");
-            fileWriter(in3 + String.format("<name>TIME: %s</name>\n", timeFormatter.format(add1024toDate(mDate))));
-            if (type == trkRec) fileWriter(in3 + "<visibility>0</visibility>\n");
+            fileWriter(in3 + String.format(Locale.US, "<name>TIME: %s</name>\n",
+                    timeFormatter.format(add1024toDate(mDate))));
+            if (type == GPXtrk) fileWriter(in3 + "<visibility>0</visibility>\n");
 
             fileWriter(in3 + "<description><![CDATA[<table width=400>");
-            fileWriter(String.format("<tr><td>TIME:</td><td>%s</td></tr>", wpFormatter.format(add1024toDate(mDate))));
-            tmpString = (getRCRs(rcr).length() > 1) ? "MixStamp" : "ButtonStamp";
-            fileWriter(String.format("<tr><td>RCR:</td><td>%s <b>(%s)</b></td></tr>", getRCRs(rcr), tmpString));
-            fileWriter(String.format("<tr><td>VALID:</td><td>%s</td></tr>", getValid(valid)));
+            fileWriter(String.format(Locale.US, "<tr><td>TIME:</td><td>%s</td></tr>",
+                    wpFormatter.format(add1024toDate(mDate))));
+            tmpString = getKMLstamp(rcr);
+            fileWriter(String.format(Locale.US, "<tr><td>RCR:</td><td>%s <b>(%s)</b></td></tr>",
+                    getRCRs(rcr), tmpString));
+            fileWriter(String.format(Locale.US, "<tr><td>VALID:</td><td>%s</td></tr>",
+                    getValid(valid)));
             latS = (Double.parseDouble(cells[2]) < 0) ? cells[2].substring(1) : cells[2];
-            fileWriter(String.format("<tr><td>LATITUDE:</td><td>%s %s</td></tr>", latS, (Double.parseDouble(cells[2]) < 0) ? "S" : "N"));
+            fileWriter(String.format(Locale.US, "<tr><td>LATITUDE:</td><td>%s %s</td></tr>",
+                    latS, (Double.parseDouble(cells[2]) < 0) ? "S" : "N"));
             lonS = (Double.parseDouble(cells[3]) < 0) ? cells[3].substring(1) : cells[3];
-            fileWriter(String.format("<tr><td>LONGITUDE:</td><td>%s %s</td></tr>", lonS, (Double.parseDouble(cells[3]) < 0) ? "W" : "E"));
-            fileWriter(String.format("<tr><td>HEIGHT:</td><td>%s m</td></tr></table>]]>", cells[4]));
-            fileWriter(String.format("</description><TimeStamp><when>%s</when></TimeStamp>\n", formatter.format(add1024toDate(mDate))));
+            fileWriter(String.format(Locale.US, "<tr><td>LONGITUDE:</td><td>%s %s</td></tr>",
+                    lonS, (Double.parseDouble(cells[3]) < 0) ? "W" : "E"));
+            fileWriter(String.format(Locale.US, "<tr><td>HEIGHT:</td><td>%s m</td></tr></table>]]>",
+                    cells[4]));
+            fileWriter(String.format(Locale.US, "</description><TimeStamp><when>%s</when></TimeStamp>\n",
+                    formatter.format(add1024toDate(mDate))));
 
-            fileWriter(in3 + String.format("<styleUrl>#Style%s</styleUrl>\n", tmpString.substring(0, 1)));
+            fileWriter(in3 + String.format(Locale.US, "<styleUrl>#Style%s</styleUrl>\n",
+                    tmpString.substring(0, 1)));
             fileWriter(in3 + "<Point>\n");
-            fileWriter(in3 + String.format("<coordinates>%s,%s,%s</coordinates></Point>\n", cells[3], cells[2], cells[4]));
+            fileWriter(in3 + String.format(Locale.US, "<coordinates>%s,%s,%s</coordinates></Point>\n",
+                    cells[3], cells[2], cells[4]));
             fileWriter(in2 + "</Placemark>\n");
         } //trkRecLine()
 
         private void routePoints() {
-            mLog(2, "MakeGPXFragment.makeKML.routePoints()");
+            mLog(0, "MakeGPXFragment.makeKML.routePoints()");
             reader = null;
             linesOut = 0;
 //UTC,valid,lat,lon,height,speed,heading,DSTA,DAGE,PDOP,HDOP,VDOP,sat,inuse,SID,RCR,miliSec,distance,rChk,cChk,trk,mask
@@ -1396,32 +1451,33 @@ public class MakeGPXFragment extends Fragment {
                 reader = new BufferedReader(new FileReader(wrkFile));
                 while ((mLine = reader.readLine()) != null) {
                     linesOut++;
+                    mLog(1, "KMLtpt-" + linesOut + "- " + mLine);
                     bytesRead += mLine.length();
                     if (linesOut == 1) continue;
-                    cells = mLine.split(",");
+                    cells = mLine.split("/");
                     valid = Short.parseShort(cells[1]);
                     rcr = Short.parseShort(cells[15]);
                     if (valid == 1 || rcr > 16) continue;
                     lat = Double.parseDouble(cells[2]);
                     lon = Double.parseDouble(cells[3]);
                     if (lat == 0 || lon == 0) continue;
-                    fileWriter(in4 + String.format("%s,%s,%s\n", cells[3], cells[2], cells[4]));
+                    fileWriter(in4 + String.format(Locale.US, "%s,%s,%s\n", cells[3], cells[2], cells[4]));
                     pct = (int) ((bytesRead * 100) / bytesToRead);
                     if (pct > 100) pct = 100;
                     dialog.setProgress(pct);
                 }
             } catch (FileNotFoundException e) {
                 mLog(0, "**** makeKML.WayPointPass() FileNotFoundException-reader pass");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             } catch (IOException e) {
                 mLog(0, "**** makeKML.WayPointPass() IOException-reader pass");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             } finally {
                 try {
                     if (reader != null) reader.close();
                 } catch (IOException e) {
                     mLog(0, "**** makeGPX.WayPointPass() IOException-reader.close");
-                    Main.buildCrashReport(e);
+                    Main.buildCrashReport(Log.getStackTraceString(e));
                 }
             }
         } //routePoints()
@@ -1434,13 +1490,13 @@ public class MakeGPXFragment extends Fragment {
         private int index = 0;
 
         public makeCSV(Context context) {
-            mLog(2, "MakeGPXFragment.makeCSV.makeCSV()");
+            mLog(0, "MakeGPXFragment.makeCSV.makeCSV()");
             lContext = context;
         } //makeCSV()
 
         @Override
         protected void onPreExecute() {
-            mLog(1, "MakeGPXFragment.makeCSV.onPreExecute()");
+            mLog(0, "MakeGPXFragment.makeCSV.onPreExecute()");
             dialog = new ProgressDialog(lContext);
             dialog.setCancelable(true);
             dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -1453,18 +1509,18 @@ public class MakeGPXFragment extends Fragment {
 
         @Override
         protected Void doInBackground(Void... params) {
-            mLog(1, "MakeGPXFragment.makeCSV.doInBackground()");
+            mLog(0, "MakeGPXFragment.makeCSV.doInBackground()");
             // Open csv output file
             String csvName = fileNamePrefix + ".csv"; // - date from first record in file
             csvFile = new File(appPrefs.getString("csvPath", ""), csvName);
-            mLog(1, "Creating CSV file: " + csvFile.toString());
+            mLog(0, "Creating CSV file: " + csvFile.toString());
             FileWriter mFileWriter;
             try {
                 mFileWriter = new FileWriter(csvFile);
                 mWriter = new BufferedWriter(mFileWriter, SIZEOF_SECTOR / 8);
             } catch (IOException e) {
                 mLog(0, "**** makeCSV.doInBackground() IOException-mWriter create");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             }
             bytesRead = 0;
             linesOut = 0;
@@ -1483,16 +1539,16 @@ public class MakeGPXFragment extends Fragment {
                 }
             } catch (FileNotFoundException e) {
                 mLog(0, "**** makeKML.doInBackground() FileNotFoundException-reader loop");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             } catch (IOException e) {
                 mLog(0, "**** makeKML.doInBackground() IOException-reader loop");
-                Main.buildCrashReport(e);
+                Main.buildCrashReport(Log.getStackTraceString(e));
             } finally {
                 try {
                     if (reader != null) reader.close();
                 } catch (IOException e) {
                     mLog(0, "**** makeKML.doInBackground() IOException-reader.close");
-                    Main.buildCrashReport(e);
+                    Main.buildCrashReport(Log.getStackTraceString(e));
                 }
             }
             return null;
@@ -1500,7 +1556,7 @@ public class MakeGPXFragment extends Fragment {
 
         @Override
         protected void onPostExecute(Void param) {
-            mLog(1, "MakeGPXFragment.makeCSV.onPostExecute()");
+            mLog(0, "MakeGPXFragment.makeCSV.onPostExecute()");
             if (dialog.isShowing()) dialog.dismiss();
             mTv.append("created: " + csvFile.toString() + "\n");
             scrollDown();
@@ -1511,7 +1567,7 @@ public class MakeGPXFragment extends Fragment {
             mLog(2, "MakeGPXFragment.makeCSV.csvRecLine()");
 //UTC,valid,lat,lon,height,speed,heading,DSTA,DAGE,PDOP,HDOP,VDOP,sat,inuse,SID,RCR,miliSec,distance,rChk,cChk,trk,mask
 // 0 ,  1  , 2 , 3 ,  4   ,  5  ,   6   , 7  , 8  , 9  , 10 , 11 , 12, 13  , 14, 15,  16   ,   17   , 18 , 19 , 20, 21
-            cells = csv.split(",");
+            cells = csv.split("/");
             valid = Short.parseShort(cells[1]);
             rcr = Short.parseShort(cells[15]);
 
@@ -1533,10 +1589,10 @@ public class MakeGPXFragment extends Fragment {
                 mDate = new java.util.Date(utcTime * 1000);
                 fileWriter(csvDate.format(add1024toDate(mDate)));
                 fileWriter(",");
-                formattedDate = String.format("%s", csvTime.format(add1024toDate(mDate)));
+                formattedDate = String.format(Locale.US, "%s", csvTime.format(add1024toDate(mDate)));
                 if ((formatMask & FORMAT_MILLISECOND) == FORMAT_MILLISECOND) {
                     tmpString = String.valueOf((int) Math.round(Integer.parseInt(cells[16]) / 100.0));
-                    formattedDate = String.format("%s.%s", formattedDate, tmpString);
+                    formattedDate = String.format(Locale.US, "%s.%s", formattedDate, tmpString);
                 }
                 fileWriter(formattedDate);
             } else fileWriter(",");
@@ -1563,7 +1619,7 @@ public class MakeGPXFragment extends Fragment {
 
             fileWriter(",");
             if ((formatMask & FORMAT_SPEED) == FORMAT_SPEED)
-                fileWriter(String.format("%.4f", Float.parseFloat(cells[5]) * 3.6f));
+                fileWriter(String.format(Locale.US, "%.4f", Float.parseFloat(cells[5]) * 3.6f));
 
             fileWriter(",");
             if ((formatMask & FORMAT_HEADING) == FORMAT_HEADING) fileWriter(cells[6]);
@@ -1576,19 +1632,19 @@ public class MakeGPXFragment extends Fragment {
 
             fileWriter(",");
             if ((formatMask & FORMAT_PDOP) == FORMAT_PDOP)
-                fileWriter(String.format("%.2f", Float.parseFloat(cells[9]) / 100f));
+                fileWriter(String.format(Locale.US, "%.2f", Float.parseFloat(cells[9]) / 100f));
 
             fileWriter(",");
             if ((formatMask & FORMAT_HDOP) == FORMAT_HDOP)
-                fileWriter(String.format("%.2f", Float.parseFloat(cells[10]) / 100f));
+                fileWriter(String.format(Locale.US, "%.2f", Float.parseFloat(cells[10]) / 100f));
 
             fileWriter(",");
             if ((formatMask & FORMAT_VDOP) == FORMAT_VDOP)
-                fileWriter(String.format("%.2f", Float.parseFloat(cells[11]) / 100f));
+                fileWriter(String.format(Locale.US, "%.2f", Float.parseFloat(cells[11]) / 100f));
 
             fileWriter(",");
             if ((formatMask & FORMAT_NSAT) == FORMAT_NSAT)
-                fileWriter(String.format("%s(%s)", cells[13], cells[12]));
+                fileWriter(String.format(Locale.US, "%s(%s)", cells[13], cells[12]));
 
             fileWriter(",");
             if ((formatMask & FORMAT_DISTANCE) == FORMAT_DISTANCE) fileWriter(cells[17]);
@@ -1596,11 +1652,6 @@ public class MakeGPXFragment extends Fragment {
             fileWriter(",");
             fileWriter(cells[14]);
             fileWriter("\n");
-//UTC,valid,lat,lon,height,speed,heading,DSTA,DAGE,PDOP,HDOP,VDOP,sat,inuse,SID,RCR,miliSec,distance,rChk,cChk,trk,mask
-// 0 ,  1  , 2 , 3 ,  4   ,  5  ,   6   , 7  , 8  , 9  , 10 , 11 , 12, 13  , 14, 15,  16   ,   17   , 18 , 19 , 20, 21
-//"INDEX,RCR,DATE,TIME,VALID,LATITUDE,N/S,LONGITUDE,E/W,HEIGHT(m),SPEED(km/h),HEADING,
-//   DSTA,DAGE,PDOP,HDOP,VDOP,NSAT (USED/VIEW),DISTANCE(m),SAT INFO (SID-ELE-AZI-SNR)
-
         } //csvRecLine()
     } // class makeCSV
 

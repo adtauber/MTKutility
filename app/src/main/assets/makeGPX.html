@@ -8,6 +8,7 @@
 
 
 
+
   
   <meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><title>makeGPX</title></head><body>
 
@@ -52,6 +53,12 @@ your logger data is the easiest way to discover how various settings
 affect your track point recording.&nbsp; I discovered that speed
 overrides time on my logger. A track point is recorded every half a
 second when my speed exceeds the set speed.&nbsp; <span style="font-weight: bold; color: rgb(204, 0, 0);">Note for Excel users: you have to set the Time column cell format to</span> custom hh:mm:ss.0 <span style="font-weight: bold; color: rgb(204, 0, 0);">to get the correct time display.</span><span style="font-weight: bold; color: rgb(204, 0, 0);"></span><br>
+<br>
+The binary conversion routines also have an app preference - <span style="color: rgb(51, 102, 255); font-weight: bold;">UTC time adjust (hours)</span>
+- to provide for UTC time correction.&nbsp; It defaults to -1 as the
+limited number of phones I was able to test indicated this would be the
+correct adjustment.&nbsp; It may not be the correct adjustment when
+daylight savings time goes into effect.&nbsp; And there may be phones that need this set to 0.<br>
 <br>
 &lt;fix&gt; values:<br>
 <div style="margin-left: 40px;">nofix - no position fix<br>

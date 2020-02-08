@@ -23,6 +23,7 @@ import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +33,6 @@ import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 import android.widget.Toast;
 
@@ -124,7 +124,7 @@ public class ClrLogFragment extends Fragment {
         try {
             Thread.sleep(mSec);
         } catch (InterruptedException e) {
-            Main.buildCrashReport(e);
+            Main.buildCrashReport(Log.getStackTraceString(e));
         }
     }//goSleep()
 
@@ -186,7 +186,7 @@ public class ClrLogFragment extends Fragment {
     private class eraseLog extends AsyncTask<Void, String, Void> {
         private Context mContext;
         private ProgressDialog dialog;
-        private SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss", Locale.US);
+        private SimpleDateFormat SDF = new SimpleDateFormat("MMM dd, yyyy HH:mm:ss");
         private String msg;
         private String[] parms;
         private String mode;
