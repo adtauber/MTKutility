@@ -25,7 +25,9 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
+
+import androidx.fragment.app.Fragment;
+
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -62,6 +64,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import com.adtdev.fileChooser.FileChooser;
+
 import static android.app.Activity.RESULT_OK;
 
 public class MakeGPXFragment extends Fragment {
@@ -162,7 +165,8 @@ public class MakeGPXFragment extends Fragment {
     private String tmpString;
     private String formattedDate;
     private int linesOut = 0;
-    private String savedTrk = "0";
+    private int newTrk = 0;
+    private int savedTrk = 0;
     private long lastUTC;
 
     private String in1 = "  ";
@@ -172,6 +176,7 @@ public class MakeGPXFragment extends Fragment {
 
     //    private myLibrary mL;
     private boolean cbxone;
+    private boolean cbxtwo;
     private static final int doLOCAL = 0;
     private static String NL = System.getProperty("line.separator");
 
@@ -203,6 +208,7 @@ public class MakeGPXFragment extends Fragment {
     private Button makeCSV;
     private TextView fileName;
     private CheckBox cbxOne;
+    private CheckBox cbxTwo;
     private EditText trkSecs;
     private View rootView;
     private ScrollView mSv;
@@ -234,6 +240,7 @@ public class MakeGPXFragment extends Fragment {
         rootView = inflater.inflate(R.layout.makegpx, container, false);
         fileName = rootView.findViewById(R.id.fileName);
         cbxOne = rootView.findViewById(R.id.cbxOne);
+        cbxTwo = rootView.findViewById(R.id.cbxTwo);
         trkSecs = rootView.findViewById(R.id.trkSecs);
         mSv = rootView.findViewById(R.id.mSv);
         mTv = rootView.findViewById(R.id.mTv);
@@ -244,6 +251,13 @@ public class MakeGPXFragment extends Fragment {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mLog(0, "*** MakeGPXFragment.onCheckedChanged() *** allow insecure checkbox changed");
                 cbxone = isChecked;
+            }
+        });
+
+        cbxTwo.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mLog(0, "*** MakeGPXFragment.onCheckedChanged() *** allow nofix checkbox changed");
+                cbxtwo = isChecked;
             }
         });
 
@@ -488,7 +502,27 @@ public class MakeGPXFragment extends Fragment {
         }
     } //getRecNum()
 
+
     private String getValid(short valid) {
+        mLog(3, "MakeGPXFragment.getValid()");
+        switch (valid) {
+            case 1:
+                return "none";
+            case 2:
+                if ((formatMask & FORMAT_HEIGHT) == FORMAT_HEIGHT) {
+                    return "3d";
+                } else {
+                    return "2d";
+                }
+            case 4:
+                return "dgps";
+            case 8:
+                return "pps";
+        }
+        return String.valueOf(valid);
+    } //getValid()
+
+/*    private String getValid(short valid) {
         mLog(3, "MakeGPXFragment.getValid()");
         switch (valid) {
             case 1:
@@ -508,7 +542,7 @@ public class MakeGPXFragment extends Fragment {
             default:
                 return String.valueOf(valid);
         }
-    } //getValid()
+    } //getValid()*/
 
     public void goSleep(int mSec) {
         mLog(3, String.format(Locale.US, "MakeGPXFragment.goSleep(%d)", mSec));
@@ -1032,7 +1066,7 @@ public class MakeGPXFragment extends Fragment {
         protected void onPreExecute() {
             mLog(0, "MakeGPXFragment.makeGPX.onPreExecute()");
             trksecs = appPrefs.getInt("trkSecs", 0);
-            if (trksecs > 0) trksecs = trksecs * 60;
+//            if (trksecs > 0) trksecs = trksecs * 60;
             dialog = new ProgressDialog(lContext);
             dialog.setCancelable(true);
             dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
@@ -1062,9 +1096,10 @@ public class MakeGPXFragment extends Fragment {
             writeHeader();
             writeGPXfile(GPXwpt);
             linesOut = 0;
-            savedTrk = "0";
+            savedTrk = 0;
             writeGPXfile(GPXtrk);
             fileWriter(in1 + "</trkseg>\n</trk>\n</gpx>\n");
+//            fileWriter(in1 + "</trk>\n</gpx>\n");
             // Close files
             try {
                 mLog(2, "closing files");
@@ -1097,12 +1132,12 @@ public class MakeGPXFragment extends Fragment {
             mLog(0, "MakeGPXFragment.makeGPX.writeHeader()");
             fileWriter("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\" ?>\n");
             fileWriter("<gpx\n");
-            fileWriter("    version=\"1.1\"\n");
+            fileWriter("    version=\"1.0\"\n");
             fileWriter("    creator=\"MTKutility - adt.androidapps@gmail.com\"\n");
-            fileWriter("    xmlns=\"http://www.topografix.com/GPX/1/1\"\n");
+            fileWriter("    xmlns=\"http://www.topografix.com/GPX/1/0\"\n");
             fileWriter("    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n");
-            fileWriter("    xsi:schemaLocation=\"http://www.topografix.com/GPX/1/1");
-            fileWriter(" http://www.topografix.com/GPX/1/1/gpx.xsd\">\n");
+            fileWriter("    xsi:schemaLocation=\"http://www.topografix.com/GPX/1/0");
+            fileWriter(" http://www.topografix.com/GPX/1/0/gpx.xsd\">\n");
         } //writeHeader()
 
         private void writeGPXfile(int type) {
@@ -1144,7 +1179,11 @@ public class MakeGPXFragment extends Fragment {
             valid = Short.parseShort(cells[1]);
             rcr = Short.parseShort(cells[15]);
             if (type == GPXwpt && !getRCRs(rcr).contains("B")) return;
-            if (valid == 1 || rcr > 16) return;
+            if (cbxtwo) {
+                if (rcr > 16) return;
+            } else {
+                if (valid < 2 || rcr > 16) return;
+            }
             utcTime = Long.parseLong(cells[0]);
             lat = Double.parseDouble(cells[2]);
             lon = Double.parseDouble(cells[3]);
@@ -1153,19 +1192,14 @@ public class MakeGPXFragment extends Fragment {
             if (!cells[18].equals(cells[19])) return;
 
             mLog(1, sType + "-" + linesOut + "- " + csv);
-            if (!cbxone) {
-                String newTrk = cells[20];
-                if (type == GPXtrk && !newTrk.equals(savedTrk)) {
+            if (type == GPXtrk) {
+                newTrk = Integer.parseInt(cells[20]);
+                if (newTrk != savedTrk) {
                     savedTrk = newTrk;
-                    if (linesOut < 2) {
+                    if (newTrk == 1) {
                         writeTrkBgn(cells[20], Long.parseLong(cells[0]));
-                    } else {
-                        if ((utcTime - lastUTC) >= trksecs) {
-                            fileWriter(in1 + "</trkseg>\n" + "</trk>\n");
-                            writeTrkBgn(cells[20], Long.parseLong(cells[0]));
-                        } else {
-                            fileWriter(in1 + "</trkseg>\n" + in1 + "<trkseg>\n");
-                        }
+                    } else if (!cbxone && (utcTime - lastUTC) >= trksecs) {
+                        writeTrkBgn(cells[20], Long.parseLong(cells[0]));
                     }
                 }
             }
@@ -1173,15 +1207,17 @@ public class MakeGPXFragment extends Fragment {
             // write XML - lat, lon, height, utcTime
             lastUTC = utcTime;
             writeLatLong(type, cells[2], cells[3], cells[4], utcTime);
-            if ((formatMask & FORMAT_HEADING) == FORMAT_HEADING) fileWriter(
+            if (type == GPXtrk && (formatMask & FORMAT_HEADING) == FORMAT_HEADING) fileWriter(
                     String.format(Locale.US, "%s<course>%s</course>\n", in3, cells[6]));
-            if ((formatMask & FORMAT_SPEED) == FORMAT_SPEED) fileWriter(
+            if (type == GPXtrk && (formatMask & FORMAT_SPEED) == FORMAT_SPEED) fileWriter(
                     String.format("%s<speed>%s</speed>\n", in3, cells[5]));
             fileWriter(String.format(Locale.US, "%s<name>%s</name>\n", in3, getRecNum(type)));
             if ((formatMask & FORMAT_RCR) == FORMAT_RCR) fileWriter(
                     String.format(Locale.US, "%s<type>%s</type>\n", in3, getRCRs(rcr)));
-            if ((formatMask & FORMAT_VALID) == FORMAT_VALID) fileWriter(
-                    String.format(Locale.US, "%s<fix>%s</fix>\n", in3, getValid(valid)));
+            if ((formatMask & FORMAT_VALID) == FORMAT_VALID)
+                //do not write <fix> tag if value is invalid
+                if (valid < 9)
+                    fileWriter(String.format(Locale.US, "%s<fix>%s</fix>\n", in3, getValid(valid)));
             if ((formatMask & FORMAT_NSAT) == FORMAT_NSAT) fileWriter(
                     String.format(Locale.US, "%s<sat>%s</sat>\n", in3, cells[13]));
             if ((formatMask & FORMAT_HDOP) == FORMAT_HDOP) fileWriter(
@@ -1216,7 +1252,6 @@ public class MakeGPXFragment extends Fragment {
             String s = "<trk>\n" + "   <name>%s</name>\n" + "   <number>%s</number>\n" + in1 + "<trkseg>\n";
             fileWriter(String.format(Locale.US, s, formattedDate, newTrk));
         } //writeTrkBgn()
-
     } //class makeGPX
 
     private class makeKML extends AsyncTask<Void, Integer, Void> {
@@ -1265,51 +1300,38 @@ public class MakeGPXFragment extends Fragment {
             //create way points XML
             count = 0;
             fileWriter("<Folder>\n");
-            fileWriter(in1 + "<name>My Waypoints</name>\n");
+            fileWriter(in1 + "<name>Waypoints</name>\n");
             fileWriter(in1 + "<open>0</open>\n");
 
             //way point Placemarks pass
+            savedTrk = 0;
             trkPointPass(GPXwpt);
 
-            fileWriter("</Folder>\n");
+            fileWriter(in1 + "</Folder>\n");
             fileWriter("<Folder>\n");
-            fileWriter(in1 + "<name>My Tracks</name>\n");
+            fileWriter(in1 + "<name>Tracks</name>\n");
             fileWriter(in1 + "<open>0</open>\n");
-            tmpString = fileNamePrefix.substring(0, 10);
-            fileWriter(in2 + String.format(Locale.US, "<name>TRACK-%s</name>\n",
-                    tmpString.replace("-", "")));
-            fileWriter(in1 + String.format(Locale.US, "<Placemark><name>%s</name>\n",
-                    wpFormatter.format(fileDate)));
-            fileWriter(in2 + "<Style>\n");
-            fileWriter(in3 + "<LineStyle>\n");
-            fileWriter(in4 + "<color>ffFF0000</color>\n");
-            fileWriter(in4 + "<width>3.0</width>\n");
-            fileWriter(in3 + "</LineStyle>\n");
-            fileWriter(in2 + "</Style>\n");
-            fileWriter(in1 + "<LineString>\n");
-            fileWriter(in2 + "<extrude>1</extrude>\n");
-            fileWriter(in2 + "<tessellate>1</tessellate>\n");
-            fileWriter(in2 + "<altitudeMode>clampToGround</altitudeMode><coordinates>\n");
-
+            fileWriter(in2 + String.format(Locale.US, "<name>tracks-%s</name>\n",
+                    fileNamePrefix));
             //longitude, latitude, height records pass
+            savedTrk = 0;
+            count = 0;
             routePoints();
-
-            fileWriter(in3 + "</coordinates>\n");
-            fileWriter(in2 + "</LineString>\n");
-            fileWriter(in1 + "</Placemark>\n");
+            if (count > 0) {
+                fileWriter(in3 + "</coordinates>\n");
+                fileWriter(in2 + "</LineString>\n");
+                fileWriter(in1 + "</Placemark>\n");
+            }
             fileWriter("</Folder>\n");
             fileWriter("<Folder>\n");
-            fileWriter(in1 + "<name>My Trackpoints</name>\n");
-            fileWriter(in1 + "<Folder>\n");
-            tmpString = fileNamePrefix.substring(0, 10);
-            fileWriter(in2 + String.format(Locale.US, "<name>Trackpoints-%s</name>\n",
-                    tmpString.replace("-", "")));
+            fileWriter(in1 + "<name>Trackpoints</name>\n");
             fileWriter(in2 + "<open>0</open>\n");
 
             //track point Placemarks pass
+            savedTrk = 0;
             trkPointPass(GPXtrk);
 
-            fileWriter(in1 + "</Folder>\n</Folder>\n\n</Document>\n</kml>");
+            fileWriter("</Folder>\n\n</Document>\n</kml>");
             return null;
         } //doInBackground()
 
@@ -1370,7 +1392,7 @@ public class MakeGPXFragment extends Fragment {
                     if (pct > 100) pct = 100;
                     dialog.setProgress(pct);
                 }
-                if (count > 0) fileWriter(in1 + "</Folder>\n");
+                if (count > 0) fileWriter("</Folder>\n");
             } catch (FileNotFoundException e) {
                 mLog(0, "**** makeKML.WayPointPass() FileNotFoundException-reader pass");
                 Main.buildCrashReport(Log.getStackTraceString(e));
@@ -1397,18 +1419,32 @@ public class MakeGPXFragment extends Fragment {
             cells = csv.split("/");
             valid = Short.parseShort(cells[1]);
             rcr = Short.parseShort(cells[15]);
-            if (type == GPXwpt && !getRCRs(rcr).contains("B")) return;
-            if (valid == 1 || rcr > 16) return;
-            lat = Double.parseDouble(cells[2]);
-            lon = Double.parseDouble(cells[3]);
-            if (lat == 0 || lon == 0) return;
             utcTime = Long.parseLong(cells[0]);
             mDate = new java.util.Date(utcTime * 1000);
-            if (count == 0) {
-                fileWriter(in1 + String.format(Locale.US, "<Folder><name>%s</name>\n",
-                        dateFormatter.format(add1024toDate(mDate))));
+            if (cbxtwo) {
+                if (rcr > 16) return;
+            } else {
+                if (valid < 2 || rcr > 16) return;
             }
             count++;
+            lat = Double.parseDouble(cells[2]);
+            lon = Double.parseDouble(cells[3]);
+            newTrk = Integer.parseInt(cells[20]);
+            if (newTrk != savedTrk) {
+                savedTrk = newTrk;
+                if (newTrk == 1) {
+                    fileWriter(in1 + String.format(Locale.US, "<Folder><name>%s</name>\n",
+                            tnFormatter.format(add1024toDate(mDate))));
+                } else if (!cbxone && (utcTime - lastUTC) >= trksecs) {
+                    fileWriter(in1 + "</Folder>\n");
+                    fileWriter(in1 + String.format(Locale.US, "<Folder><name>%s</name>\n",
+                            tnFormatter.format(add1024toDate(mDate))));
+                }
+            }
+            lastUTC = utcTime;
+            if ((type == GPXwpt && !getRCRs(rcr).contains("B"))) {
+                return;
+            }
             fileWriter(in2 + "<Placemark>\n");
             fileWriter(in3 + String.format(Locale.US, "<name>TIME: %s</name>\n",
                     timeFormatter.format(add1024toDate(mDate))));
@@ -1453,14 +1489,34 @@ public class MakeGPXFragment extends Fragment {
                     linesOut++;
                     mLog(1, "KMLtpt-" + linesOut + "- " + mLine);
                     bytesRead += mLine.length();
-                    if (linesOut == 1) continue;
+                    if (mLine.contains("UTC")) continue;
                     cells = mLine.split("/");
                     valid = Short.parseShort(cells[1]);
                     rcr = Short.parseShort(cells[15]);
-                    if (valid == 1 || rcr > 16) continue;
+                    if (cbxtwo) {
+                        if (rcr > 16) continue;
+                    } else {
+                        if (valid < 2 || rcr > 16) continue;
+                    }
                     lat = Double.parseDouble(cells[2]);
                     lon = Double.parseDouble(cells[3]);
-                    if (lat == 0 || lon == 0) continue;
+                    utcTime = Long.parseLong(cells[0]);
+                    mDate = new java.util.Date(utcTime * 1000);
+
+                    newTrk = Integer.parseInt(cells[20]);
+                    if (newTrk != savedTrk) {
+                        savedTrk = newTrk;
+                        if (newTrk == 1) {
+                            routeHeader(mDate);
+                        } else if (!cbxone && (utcTime - lastUTC) >= trksecs) {
+                            fileWriter(in2 + "</coordinates>\n");
+                            fileWriter(in1 + "</LineString>\n");
+                            fileWriter(in1 + "</Placemark>\n");
+                            routeHeader(mDate);
+                        }
+                    }
+                    lastUTC = utcTime;
+                    count++;
                     fileWriter(in4 + String.format(Locale.US, "%s,%s,%s\n", cells[3], cells[2], cells[4]));
                     pct = (int) ((bytesRead * 100) / bytesToRead);
                     if (pct > 100) pct = 100;
@@ -1482,6 +1538,20 @@ public class MakeGPXFragment extends Fragment {
             }
         } //routePoints()
 
+        private void routeHeader(java.util.Date mdate) {
+            fileWriter(in1 + String.format(Locale.US, "<Placemark><name>%s</name>\n",
+                    tnFormatter.format(add1024toDate(mDate))));
+            fileWriter(in2 + "<Style>\n");
+            fileWriter(in3 + "<LineStyle>\n");
+            fileWriter(in4 + "<color>ffE60014</color>\n");//ffFF0000 ffE60014
+            fileWriter(in4 + "<width>3.0</width>\n");
+            fileWriter(in3 + "</LineStyle>\n");
+            fileWriter(in2 + "</Style>\n");
+            fileWriter(in1 + "<LineString>\n");
+            fileWriter(in2 + "<extrude>1</extrude>\n");
+            fileWriter(in2 + "<tessellate>1</tessellate>\n");
+            fileWriter(in2 + "<altitudeMode>clampToGround</altitudeMode><coordinates>\n");
+        } //routeHeader()
     } // class makeKML
 
     private class makeCSV extends AsyncTask<Void, Integer, Void> {

@@ -136,6 +136,7 @@
     <string name="BfileTxt">select a binary file</string>
     <string name="oneTrack">write one track</string>
     <string name="trkSecs">start new track (minutes)</string>
+    <string name="noFixOK">allow nofix track points</string>
     <string name="readBIN">reading binary file</string>
     <string name="writeGPX">writing GPX file</string>
     <string name="writeKML">writing KML file</string>

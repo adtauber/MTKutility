@@ -3,17 +3,14 @@ package com.adtdev.fileChooser;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 //import android.support.design.widget.Snackbar;
-import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 

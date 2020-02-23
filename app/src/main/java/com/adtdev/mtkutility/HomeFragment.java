@@ -18,10 +18,11 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.support.design.widget.NavigationView;
-import android.support.v4.app.Fragment;
+import com.google.android.material.navigation.NavigationView;
+
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
@@ -404,7 +405,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
     }//onResume
 
     @Override
-    public void onClick(android.support.v4.app.DialogFragment dialog) {
+    public void onClick(DialogFragment dialog) {
         mLog(0, "HomeFragment.onClick");
         if (GPSmac == null) return;
         GPSmac = appPrefs.getString("GPSmac", "");
@@ -416,7 +417,7 @@ public class HomeFragment extends Fragment implements getGPSid.GPSdialogListener
     }//onClick(android.app.DialogFragment dialog)
 
     @Override
-    public void onDialogNegativeClick(android.support.v4.app.DialogFragment dialog) {
+    public void onDialogNegativeClick(DialogFragment dialog) {
         mLog(0, "HomeFragment.onDialogNegativeClick");
         msg = getText(android.R.string.cancel) + " pressed +++++";
         Toast.makeText(mContext, msg, Toast.LENGTH_LONG).show();
