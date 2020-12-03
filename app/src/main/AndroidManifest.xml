@@ -14,7 +14,8 @@
         android:roundIcon="@drawable/ic_launcher"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
+        android:usesCleartextTraffic="true"
+        android:requestLegacyExternalStorage="true">
         <activity
             android:name="com.adtdev.mtkutility.Main"
             android:label="@string/app_name"

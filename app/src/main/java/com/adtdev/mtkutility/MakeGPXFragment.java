@@ -190,6 +190,7 @@ public class MakeGPXFragment extends Fragment {
     private final int ABORT = Main.ABORT;
     private static final int noTrunc = Main.noTrunc;
     private int pct = 0;
+    private int lastpct = 0;
     private File bin_file;
     private int binLength = 0;
     private long csvLength = 0;
@@ -702,6 +703,7 @@ public class MakeGPXFragment extends Fragment {
         private void BinSectorParse(ByteBuffer buf) {
             mLog(2, "MakeGPXFragment.makeWrkFile.BinSectorParse()");
             String s, x;
+            lastpct = 0;
             logStoped = false;
             // Skip the header (which is 0x200 bytes long)
             buf.position(0x200);
@@ -1033,8 +1035,11 @@ public class MakeGPXFragment extends Fragment {
                 }
 
                 pct = (int) ((totalBytes * 100) / binLength);
-                if (pct > 100) pct = 100;
-                dialog.setProgress(pct);
+                if (pct > lastpct) {
+                    if (pct > 100) pct = 100;
+                    dialog.setProgress(pct);
+                    lastpct = pct;
+                }
                 mLog(3, String.format(Locale.US, "bytesRead %d Checksum %x read cChecksum %x",
                         bytesRead, cChecksum, rChecksum));
 
@@ -1144,14 +1149,18 @@ public class MakeGPXFragment extends Fragment {
             sType = (type == GPXwpt) ? "GPXwpt" : "GPXtrk";
             mLog(0, String.format(Locale.US, "MakeGPXFragment.makeGPX.writeGPXfile(%s)", sType));
             reader = null;
+            lastpct = 0;
             try {
                 reader = new BufferedReader(new FileReader(wrkFile));
                 while ((mLine = reader.readLine()) != null) {
                     bytesRead += mLine.length();
                     writeGPXline(type, mLine);
                     pct = (int) ((bytesRead * 100) / bytesToRead);
-                    if (pct > 100) pct = 100;
-                    dialog.setProgress(pct);
+                    if (pct > lastpct) {
+                        if (pct > 100) pct = 100;
+                        dialog.setProgress(pct);
+                        lastpct = pct;
+                    }
                 }
             } catch (FileNotFoundException e) {
                 mLog(0, "**** makeGPX.writeGPXfile() FileNotFoundException-reader pass");
@@ -1348,6 +1357,7 @@ public class MakeGPXFragment extends Fragment {
             mLog(0, "MakeGPXFragment.makeKML.StyleMapPass()");
             reader = null;
             linesOut = 0;
+            lastpct = 0;
             try {
                 reader = new BufferedReader(new InputStreamReader
                         (lContext.getAssets().open("kmlHeader.xml"), "UTF-8"));
@@ -1359,8 +1369,11 @@ public class MakeGPXFragment extends Fragment {
                         fileWriter(String.format(Locale.US, "<name>%s</name>\n", fileNamePrefix));
                     fileWriter(mLine + "\n");
                     pct = (int) ((bytesRead * 100) / bytesToRead);
-                    if (pct > 100) pct = 100;
-                    dialog.setProgress(pct);
+                    if (pct > lastpct) {
+                        if (pct > 100) pct = 100;
+                        dialog.setProgress(pct);
+                        lastpct = pct;
+                    }
                 }
             } catch (IOException e) {
                 mLog(0, "**** makeKML.StyleMapPass() IOException-reader loop");
@@ -1381,6 +1394,7 @@ public class MakeGPXFragment extends Fragment {
             reader = null;
             linesOut = 0;
             count = 0;
+            lastpct = 0;
             try {
                 reader = new BufferedReader(new FileReader(wrkFile));
                 while ((mLine = reader.readLine()) != null) {
@@ -1389,8 +1403,11 @@ public class MakeGPXFragment extends Fragment {
                     if (linesOut == 1) continue;
                     trkRecLine(type, mLine);
                     pct = (int) ((bytesRead * 100) / bytesToRead);
-                    if (pct > 100) pct = 100;
-                    dialog.setProgress(pct);
+                    if (pct > lastpct) {
+                        if (pct > 100) pct = 100;
+                        dialog.setProgress(pct);
+                        lastpct = pct;
+                    }
                 }
                 if (count > 0) fileWriter("</Folder>\n");
             } catch (FileNotFoundException e) {
@@ -1481,6 +1498,7 @@ public class MakeGPXFragment extends Fragment {
             mLog(0, "MakeGPXFragment.makeKML.routePoints()");
             reader = null;
             linesOut = 0;
+            lastpct = 0;
 //UTC,valid,lat,lon,height,speed,heading,DSTA,DAGE,PDOP,HDOP,VDOP,sat,inuse,SID,RCR,miliSec,distance,rChk,cChk,trk,mask
 // 0 ,  1  , 2 , 3 ,  4   ,  5  ,   6   , 7  , 8  , 9  , 10 , 11 , 12, 13  , 14, 15,  16   ,   17   , 18 , 19 , 20, 21
             try {
@@ -1519,8 +1537,11 @@ public class MakeGPXFragment extends Fragment {
                     count++;
                     fileWriter(in4 + String.format(Locale.US, "%s,%s,%s\n", cells[3], cells[2], cells[4]));
                     pct = (int) ((bytesRead * 100) / bytesToRead);
-                    if (pct > 100) pct = 100;
-                    dialog.setProgress(pct);
+                    if (pct > lastpct) {
+                        if (pct > 100) pct = 100;
+                        dialog.setProgress(pct);
+                        lastpct = pct;
+                    }
                 }
             } catch (FileNotFoundException e) {
                 mLog(0, "**** makeKML.WayPointPass() FileNotFoundException-reader pass");
@@ -1594,6 +1615,7 @@ public class MakeGPXFragment extends Fragment {
             }
             bytesRead = 0;
             linesOut = 0;
+            lastpct = 0;
             //write header row
             fileWriter(csvHeader);
             try {
@@ -1604,8 +1626,11 @@ public class MakeGPXFragment extends Fragment {
                     if (linesOut == 1) continue;
                     csvRecLine(mLine);
                     pct = (int) ((bytesRead * 100) / bytesToRead);
-                    if (pct > 100) pct = 100;
-                    dialog.setProgress(pct);
+                    if (pct > lastpct) {
+                        if (pct > 100) pct = 100;
+                        dialog.setProgress(pct);
+                        lastpct = pct;
+                    }
                 }
             } catch (FileNotFoundException e) {
                 mLog(0, "**** makeKML.doInBackground() FileNotFoundException-reader loop");
